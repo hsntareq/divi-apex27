@@ -25,7 +25,6 @@ add_action( 'et_builder_ready', 'divi_apex27_register_modules' );
 add_action( 'divi_module_library_register_modules', 'divi_apex27_register_modules' );
 add_action( 'init', 'divi_apex27_register_modules', 20 );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
-add_shortcode( 'divi_apex27_property_search', 'divi_apex27_shortcode' );
 
 /**
  * Enqueue frontend assets.
@@ -55,13 +54,13 @@ function divi_apex27_enqueue_builder_assets() {
 		true
 	);
 
-	$metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/property-search/module.json' ), true );
+	$metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/property-filter/module.json' ), true );
 	if ( is_array( $metadata ) ) {
 		wp_add_inline_script(
-			'divi-apex27-builder',
-			'window.diviApex27PropertySearchMetadata = ' . wp_json_encode( $metadata ) . ';',
-			'before'
-		);
+				'divi-apex27-builder',
+				'window.diviApex27PropertyFilterMetadata = ' . wp_json_encode( $metadata ) . ';',
+				'before'
+			);
 	}
 
 	wp_enqueue_script( 'divi-apex27-builder' );
@@ -92,7 +91,7 @@ function divi_apex27_register_modules() {
 		return;
 	}
 
-	$module_path = DIVI_APEX27_PATH . 'modules/property-search';
+	$module_path = DIVI_APEX27_PATH . 'modules/property-filter';
 	$config      = array(
 		'render_callback' => 'divi_apex27_render_callback',
 	);

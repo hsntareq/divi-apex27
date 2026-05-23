@@ -1,0 +1,950 @@
+{
+    "name": "divi-apex27/property-filter",
+    "version": "1.0.0",
+    "apiVersion": 2,
+    "title": "Apex27 Property Filter",
+    "titles": "Apex27 Property Filters",
+    "moduleIcon": "divi/module-search",
+    "moduleClassName": "divi-apex27-property-filter",
+    "moduleOrderClassName": "divi_apex27_property_filter",
+    "category": "module",
+    "visualBuilderScript": "divi-apex27-builder",
+    "attributes": {
+        "module": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "settings": {
+                "meta": {
+                    "meta": []
+                },
+                "advanced": {
+                    "html": [],
+                    "link": [],
+                    "text": [],
+                    "loop": []
+                },
+                "decoration": {
+                    "animation": [],
+                    "attributes": [],
+                    "background": [],
+                    "border": [],
+                    "boxShadow": [],
+                    "conditions": [],
+                    "disabledOn": [],
+                    "filters": [],
+                    "interactions": [],
+                    "overflow": [],
+                    "order": [],
+                    "position": [],
+                    "scroll": [],
+                    "sizing": [],
+                    "spacing": [],
+                    "sticky": [],
+                    "transform": [],
+                    "transition": [],
+                    "zIndex": []
+                }
+            }
+        },
+        "apex27": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "default": {
+                "content": {
+                    "title": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "type": {
+                        "desktop": {
+                            "value": "rent"
+                        }
+                    },
+                    "property_type": {
+                        "desktop": {
+                            "value": "flat"
+                        }
+                    },
+                    "overseas": {
+                        "desktop": {
+                            "value": "0"
+                        }
+                    },
+                    "min_price": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "max_price": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "city": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "min_beds": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "max_beds": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "sort": {
+                        "desktop": {
+                            "value": "highest_price"
+                        }
+                    },
+                    "empty_text": {
+                        "desktop": {
+                            "value": "No properties found."
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "content": {
+                    "title": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.title",
+                            "priority": 5,
+                            "render": true,
+                            "label": "Title",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.type",
+                            "priority": 10,
+                            "render": true,
+                            "label": "Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "sale": {
+                                            "label": "Sales"
+                                        },
+                                        "rent": {
+                                            "label": "Lettings"
+                                        },
+                                        "land": {
+                                            "label": "Land"
+                                        },
+                                        "commercial_sale": {
+                                            "label": "Commercial Sales"
+                                        },
+                                        "commercial_rent": {
+                                            "label": "Commercial Lettings"
+                                        },
+                                        "new_homes": {
+                                            "label": "New Homes"
+                                        },
+                                        "auctions": {
+                                            "label": "Auctions"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "property_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.property_type",
+                            "priority": 20,
+                            "render": true,
+                            "label": "Property Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Property Type"
+                                        },
+                                        "bungalow": {
+                                            "label": "Bungalow"
+                                        },
+                                        "detached_house": {
+                                            "label": "Detached House"
+                                        },
+                                        "end_terrace": {
+                                            "label": "End Terraced House"
+                                        },
+                                        "flat": {
+                                            "label": "Flat"
+                                        },
+                                        "house": {
+                                            "label": "House"
+                                        },
+                                        "industrial": {
+                                            "label": "Industrial"
+                                        },
+                                        "link_detached": {
+                                            "label": "Link Detached House"
+                                        },
+                                        "maisonette": {
+                                            "label": "Maisonette"
+                                        },
+                                        "office": {
+                                            "label": "Office"
+                                        },
+                                        "restaurant": {
+                                            "label": "Restaurant"
+                                        },
+                                        "semi_detached_house": {
+                                            "label": "Semi-detached House"
+                                        },
+                                        "studio": {
+                                            "label": "Studio"
+                                        },
+                                        "terraced": {
+                                            "label": "Terraced House"
+                                        },
+                                        "warehouse": {
+                                            "label": "Warehouse"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "overseas": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.overseas",
+                            "priority": 30,
+                            "render": true,
+                            "label": "UK / Overseas",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": [
+                                        {
+                                            "label": "UK"
+                                        },
+                                        {
+                                            "label": "Overseas"
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "min_price": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.min_price",
+                            "priority": 40,
+                            "render": true,
+                            "label": "Min. Price",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Any price"
+                                        },
+                                        "100": {
+                                            "label": "100"
+                                        },
+                                        "150": {
+                                            "label": "150"
+                                        },
+                                        "200": {
+                                            "label": "200"
+                                        },
+                                        "250": {
+                                            "label": "250"
+                                        },
+                                        "300": {
+                                            "label": "300"
+                                        },
+                                        "350": {
+                                            "label": "350"
+                                        },
+                                        "400": {
+                                            "label": "400"
+                                        },
+                                        "450": {
+                                            "label": "450"
+                                        },
+                                        "500": {
+                                            "label": "500"
+                                        },
+                                        "550": {
+                                            "label": "550"
+                                        },
+                                        "600": {
+                                            "label": "600"
+                                        },
+                                        "650": {
+                                            "label": "650"
+                                        },
+                                        "700": {
+                                            "label": "700"
+                                        },
+                                        "750": {
+                                            "label": "750"
+                                        },
+                                        "800": {
+                                            "label": "800"
+                                        },
+                                        "850": {
+                                            "label": "850"
+                                        },
+                                        "900": {
+                                            "label": "900"
+                                        },
+                                        "950": {
+                                            "label": "950"
+                                        },
+                                        "1000": {
+                                            "label": "1,000"
+                                        },
+                                        "1250": {
+                                            "label": "1,250"
+                                        },
+                                        "1500": {
+                                            "label": "1,500"
+                                        },
+                                        "1750": {
+                                            "label": "1,750"
+                                        },
+                                        "2000": {
+                                            "label": "2,000"
+                                        },
+                                        "3000": {
+                                            "label": "3,000"
+                                        },
+                                        "3500": {
+                                            "label": "3,500"
+                                        },
+                                        "4000": {
+                                            "label": "4,000"
+                                        },
+                                        "4500": {
+                                            "label": "4,500"
+                                        },
+                                        "5000": {
+                                            "label": "5,000"
+                                        },
+                                        "50000": {
+                                            "label": "50,000"
+                                        },
+                                        "75000": {
+                                            "label": "75,000"
+                                        },
+                                        "100000": {
+                                            "label": "100,000"
+                                        },
+                                        "125000": {
+                                            "label": "125,000"
+                                        },
+                                        "150000": {
+                                            "label": "150,000"
+                                        },
+                                        "175000": {
+                                            "label": "175,000"
+                                        },
+                                        "200000": {
+                                            "label": "200,000"
+                                        },
+                                        "225000": {
+                                            "label": "225,000"
+                                        },
+                                        "250000": {
+                                            "label": "250,000"
+                                        },
+                                        "275000": {
+                                            "label": "275,000"
+                                        },
+                                        "300000": {
+                                            "label": "300,000"
+                                        },
+                                        "325000": {
+                                            "label": "325,000"
+                                        },
+                                        "350000": {
+                                            "label": "350,000"
+                                        },
+                                        "375000": {
+                                            "label": "375,000"
+                                        },
+                                        "400000": {
+                                            "label": "400,000"
+                                        },
+                                        "425000": {
+                                            "label": "425,000"
+                                        },
+                                        "450000": {
+                                            "label": "450,000"
+                                        },
+                                        "475000": {
+                                            "label": "475,000"
+                                        },
+                                        "500000": {
+                                            "label": "500,000"
+                                        },
+                                        "550000": {
+                                            "label": "550,000"
+                                        },
+                                        "600000": {
+                                            "label": "600,000"
+                                        },
+                                        "650000": {
+                                            "label": "650,000"
+                                        },
+                                        "700000": {
+                                            "label": "700,000"
+                                        },
+                                        "750000": {
+                                            "label": "750,000"
+                                        },
+                                        "800000": {
+                                            "label": "800,000"
+                                        },
+                                        "850000": {
+                                            "label": "850,000"
+                                        },
+                                        "900000": {
+                                            "label": "900,000"
+                                        },
+                                        "950000": {
+                                            "label": "950,000"
+                                        },
+                                        "1000000": {
+                                            "label": "1,000,000"
+                                        },
+                                        "1100000": {
+                                            "label": "1,100,000"
+                                        },
+                                        "1200000": {
+                                            "label": "1,200,000"
+                                        },
+                                        "1300000": {
+                                            "label": "1,300,000"
+                                        },
+                                        "1400000": {
+                                            "label": "1,400,000"
+                                        },
+                                        "1500000": {
+                                            "label": "1,500,000"
+                                        },
+                                        "1750000": {
+                                            "label": "1,750,000"
+                                        },
+                                        "2000000": {
+                                            "label": "2,000,000"
+                                        },
+                                        "2250000": {
+                                            "label": "2,250,000"
+                                        },
+                                        "2500000": {
+                                            "label": "2,500,000"
+                                        },
+                                        "2750000": {
+                                            "label": "2,750,000"
+                                        },
+                                        "3000000": {
+                                            "label": "3,000,000"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "max_price": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.max_price",
+                            "priority": 50,
+                            "render": true,
+                            "label": "Max. Price",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Any price"
+                                        },
+                                        "100": {
+                                            "label": "100"
+                                        },
+                                        "150": {
+                                            "label": "150"
+                                        },
+                                        "200": {
+                                            "label": "200"
+                                        },
+                                        "250": {
+                                            "label": "250"
+                                        },
+                                        "300": {
+                                            "label": "300"
+                                        },
+                                        "350": {
+                                            "label": "350"
+                                        },
+                                        "400": {
+                                            "label": "400"
+                                        },
+                                        "450": {
+                                            "label": "450"
+                                        },
+                                        "500": {
+                                            "label": "500"
+                                        },
+                                        "550": {
+                                            "label": "550"
+                                        },
+                                        "600": {
+                                            "label": "600"
+                                        },
+                                        "650": {
+                                            "label": "650"
+                                        },
+                                        "700": {
+                                            "label": "700"
+                                        },
+                                        "750": {
+                                            "label": "750"
+                                        },
+                                        "800": {
+                                            "label": "800"
+                                        },
+                                        "850": {
+                                            "label": "850"
+                                        },
+                                        "900": {
+                                            "label": "900"
+                                        },
+                                        "950": {
+                                            "label": "950"
+                                        },
+                                        "1000": {
+                                            "label": "1,000"
+                                        },
+                                        "1250": {
+                                            "label": "1,250"
+                                        },
+                                        "1500": {
+                                            "label": "1,500"
+                                        },
+                                        "1750": {
+                                            "label": "1,750"
+                                        },
+                                        "2000": {
+                                            "label": "2,000"
+                                        },
+                                        "3000": {
+                                            "label": "3,000"
+                                        },
+                                        "3500": {
+                                            "label": "3,500"
+                                        },
+                                        "4000": {
+                                            "label": "4,000"
+                                        },
+                                        "4500": {
+                                            "label": "4,500"
+                                        },
+                                        "5000": {
+                                            "label": "5,000"
+                                        },
+                                        "50000": {
+                                            "label": "50,000"
+                                        },
+                                        "75000": {
+                                            "label": "75,000"
+                                        },
+                                        "100000": {
+                                            "label": "100,000"
+                                        },
+                                        "125000": {
+                                            "label": "125,000"
+                                        },
+                                        "150000": {
+                                            "label": "150,000"
+                                        },
+                                        "175000": {
+                                            "label": "175,000"
+                                        },
+                                        "200000": {
+                                            "label": "200,000"
+                                        },
+                                        "225000": {
+                                            "label": "225,000"
+                                        },
+                                        "250000": {
+                                            "label": "250,000"
+                                        },
+                                        "275000": {
+                                            "label": "275,000"
+                                        },
+                                        "300000": {
+                                            "label": "300,000"
+                                        },
+                                        "325000": {
+                                            "label": "325,000"
+                                        },
+                                        "350000": {
+                                            "label": "350,000"
+                                        },
+                                        "375000": {
+                                            "label": "375,000"
+                                        },
+                                        "400000": {
+                                            "label": "400,000"
+                                        },
+                                        "425000": {
+                                            "label": "425,000"
+                                        },
+                                        "450000": {
+                                            "label": "450,000"
+                                        },
+                                        "475000": {
+                                            "label": "475,000"
+                                        },
+                                        "500000": {
+                                            "label": "500,000"
+                                        },
+                                        "550000": {
+                                            "label": "550,000"
+                                        },
+                                        "600000": {
+                                            "label": "600,000"
+                                        },
+                                        "650000": {
+                                            "label": "650,000"
+                                        },
+                                        "700000": {
+                                            "label": "700,000"
+                                        },
+                                        "750000": {
+                                            "label": "750,000"
+                                        },
+                                        "800000": {
+                                            "label": "800,000"
+                                        },
+                                        "850000": {
+                                            "label": "850,000"
+                                        },
+                                        "900000": {
+                                            "label": "900,000"
+                                        },
+                                        "950000": {
+                                            "label": "950,000"
+                                        },
+                                        "1000000": {
+                                            "label": "1,000,000"
+                                        },
+                                        "1100000": {
+                                            "label": "1,100,000"
+                                        },
+                                        "1200000": {
+                                            "label": "1,200,000"
+                                        },
+                                        "1300000": {
+                                            "label": "1,300,000"
+                                        },
+                                        "1400000": {
+                                            "label": "1,400,000"
+                                        },
+                                        "1500000": {
+                                            "label": "1,500,000"
+                                        },
+                                        "1750000": {
+                                            "label": "1,750,000"
+                                        },
+                                        "2000000": {
+                                            "label": "2,000,000"
+                                        },
+                                        "2250000": {
+                                            "label": "2,250,000"
+                                        },
+                                        "2500000": {
+                                            "label": "2,500,000"
+                                        },
+                                        "2750000": {
+                                            "label": "2,750,000"
+                                        },
+                                        "3000000": {
+                                            "label": "3,000,000"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "city": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.city",
+                            "priority": 60,
+                            "render": true,
+                            "label": "Location",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Location"
+                                        },
+                                        "Barking": {
+                                            "label": "Barking"
+                                        },
+                                        "Chigwell": {
+                                            "label": "Chigwell"
+                                        },
+                                        "Dagenham": {
+                                            "label": "Dagenham"
+                                        },
+                                        "Dartford": {
+                                            "label": "Dartford"
+                                        },
+                                        "Grays": {
+                                            "label": "Grays"
+                                        },
+                                        "Hornchurch": {
+                                            "label": "Hornchurch"
+                                        },
+                                        "Hounslow": {
+                                            "label": "Hounslow"
+                                        },
+                                        "Ilford": {
+                                            "label": "Ilford"
+                                        },
+                                        "leyton": {
+                                            "label": "leyton"
+                                        },
+                                        "London": {
+                                            "label": "London"
+                                        },
+                                        "Rainham": {
+                                            "label": "Rainham"
+                                        },
+                                        "Romford": {
+                                            "label": "Romford"
+                                        },
+                                        "Shoreditch": {
+                                            "label": "Shoreditch"
+                                        },
+                                        "Southend-On-Sea": {
+                                            "label": "Southend-On-Sea"
+                                        },
+                                        "Tilbury": {
+                                            "label": "Tilbury"
+                                        },
+                                        "Woodford Green": {
+                                            "label": "Woodford Green"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "min_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.min_beds",
+                            "priority": 70,
+                            "render": true,
+                            "label": "Min. Bedrooms",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Min. Bedrooms"
+                                        },
+                                        "1": {
+                                            "label": "At least 1 beds"
+                                        },
+                                        "2": {
+                                            "label": "At least 2 beds"
+                                        },
+                                        "3": {
+                                            "label": "At least 3 beds"
+                                        },
+                                        "4": {
+                                            "label": "At least 4 beds"
+                                        },
+                                        "5": {
+                                            "label": "At least 5 beds"
+                                        },
+                                        "6": {
+                                            "label": "At least 6 beds"
+                                        },
+                                        "7": {
+                                            "label": "At least 7 beds"
+                                        },
+                                        "8": {
+                                            "label": "At least 8 beds"
+                                        },
+                                        "9": {
+                                            "label": "At least 9 beds"
+                                        },
+                                        "10": {
+                                            "label": "At least 10 beds"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "max_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.max_beds",
+                            "priority": 80,
+                            "render": true,
+                            "label": "Max. Bedrooms",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Max. Bedrooms"
+                                        },
+                                        "1": {
+                                            "label": "At most 1 beds"
+                                        },
+                                        "2": {
+                                            "label": "At most 2 beds"
+                                        },
+                                        "3": {
+                                            "label": "At most 3 beds"
+                                        },
+                                        "4": {
+                                            "label": "At most 4 beds"
+                                        },
+                                        "5": {
+                                            "label": "At most 5 beds"
+                                        },
+                                        "6": {
+                                            "label": "At most 6 beds"
+                                        },
+                                        "7": {
+                                            "label": "At most 7 beds"
+                                        },
+                                        "8": {
+                                            "label": "At most 8 beds"
+                                        },
+                                        "9": {
+                                            "label": "At most 9 beds"
+                                        },
+                                        "10": {
+                                            "label": "At most 10 beds"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "sort": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.sort",
+                            "priority": 90,
+                            "render": true,
+                            "label": "Sort",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "featured": {
+                                            "label": "Featured first"
+                                        },
+                                        "highest_price": {
+                                            "label": "Highest price first"
+                                        },
+                                        "lowest_price": {
+                                            "label": "Lowest price first"
+                                        },
+                                        "newly_instructed": {
+                                            "label": "Newly instructed first"
+                                        },
+                                        "newest": {
+                                            "label": "Newest first"
+                                        },
+                                        "oldest": {
+                                            "label": "Oldest first"
+                                        },
+                                        "nearest": {
+                                            "label": "Nearest first"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "empty_text": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.empty_text",
+                            "priority": 100,
+                            "render": true,
+                            "label": "Empty Text",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "customCssFields": [],
+    "settings": {
+        "content": "auto",
+        "design": "auto",
+        "advanced": "auto",
+        "groups": {
+            "searchFields": {
+                "panel": "content",
+                "priority": 10,
+                "groupName": "mainContent",
+                "component": {
+                    "name": "divi/composite",
+                    "props": {
+                        "groupLabel": "Search Fields"
+                    }
+                }
+            }
+        }
+    }
+}

@@ -36,7 +36,7 @@
 			return false;
 		}
 
-		const metadata = window.diviApex27PropertyFilterMetadata || window.diviApex27PropertySearchMetadata || {
+		const metadata = window.diviApex27PropertyFilterMetadata || {
 			name: 'divi-apex27/property-filter',
 			visualBuilderScript: 'divi-apex27-builder',
 			title: 'Apex27 Property Filter',

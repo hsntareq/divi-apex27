@@ -10,6 +10,48 @@
 	color: #333;
 }
 
+.divi-apex27-preview {
+	display: grid;
+	grid-template-columns: repeat(9, minmax(130px, 1fr));
+	gap: 8px;
+	align-items: stretch;
+	margin-bottom: 28px;
+	pointer-events: none;
+}
+
+.divi-apex27-preview-field,
+.divi-apex27-preview-button {
+	min-width: 0;
+}
+
+.divi-apex27-preview-field select {
+	width: 100%;
+	height: 38px;
+	border: 1px solid #bbb;
+	border-radius: 3px;
+	background: #fff;
+	color: #666;
+	font-size: 14px;
+	line-height: 1.2;
+	opacity: 1;
+	padding: 0 12px;
+	-webkit-text-fill-color: #666;
+}
+
+.divi-apex27-preview-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	height: 45px;
+	border: 0;
+	background: #000;
+	color: #fff;
+	font-size: 13px;
+	line-height: 1;
+	padding: 0 28px;
+	text-transform: uppercase;
+}
+
 .divi-apex27-results {
 	display: grid;
 	grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -85,6 +127,16 @@
 	color: #555;
 }
 
+@media (max-width: 1280px) {
+	.divi-apex27-preview {
+		grid-template-columns: repeat(4, minmax(150px, 1fr));
+	}
+
+	.divi-apex27-preview-button {
+		grid-column: span 2;
+	}
+}
+
 @media (max-width: 980px) {
 	.divi-apex27-results {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -99,5 +151,14 @@
 
 	.divi-apex27-results {
 		grid-template-columns: 1fr;
+	}
+
+	.divi-apex27-preview {
+		grid-template-columns: 1fr;
+	}
+
+	.divi-apex27-preview-button {
+		grid-column: auto;
+		width: 100%;
 	}
 }
