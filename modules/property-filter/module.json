@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/property-filter",
-    "version": "1.0.3",
+    "version": "1.0.9",
     "apiVersion": 2,
     "title": "Apex27 Property Filter",
     "titles": "Apex27 Property Filters",
@@ -56,27 +56,27 @@
                             "value": ""
                         }
                     },
+                    "listing_type": {
+                        "desktop": {
+                            "value": "listings"
+                        }
+                    },
                     "type": {
                         "desktop": {
                             "value": "rent"
                         }
                     },
+                    "column_count": {
+                        "desktop": {
+                            "value": "4"
+                        }
+                    },
+                    "sector": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
                     "property_type": {
-                        "desktop": {
-                            "value": ""
-                        }
-                    },
-                    "overseas": {
-                        "desktop": {
-                            "value": "0"
-                        }
-                    },
-                    "min_price": {
-                        "desktop": {
-                            "value": ""
-                        }
-                    },
-                    "max_price": {
                         "desktop": {
                             "value": ""
                         }
@@ -86,14 +86,14 @@
                             "value": ""
                         }
                     },
-                    "min_beds": {
+                    "valuation_type": {
                         "desktop": {
                             "value": ""
                         }
                     },
-                    "max_beds": {
+                    "posts_per_page": {
                         "desktop": {
-                            "value": ""
+                            "value": "27"
                         }
                     },
                     "sort": {
@@ -116,7 +116,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.title",
                             "priority": 5,
-                            "render": true,
+                            "render": false,
                             "label": "Title",
                             "component": {
                                 "name": "divi/text",
@@ -138,25 +138,79 @@
                                 "props": {
                                     "options": {
                                         "sale": {
-                                            "label": "Sales"
+                                            "label": "Sales (Residential)"
                                         },
                                         "rent": {
-                                            "label": "Lettings"
+                                            "label": "Lettings (Residential)"
                                         },
                                         "land": {
                                             "label": "Land"
                                         },
                                         "commercial_sale": {
-                                            "label": "Commercial Sales"
+                                            "label": "Sales (Commercial)"
                                         },
                                         "commercial_rent": {
-                                            "label": "Commercial Lettings"
+                                            "label": "Lettings (Commercial)"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "listing_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.listing_type",
+                            "priority": 15,
+                            "render": true,
+                            "label": "Listing Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "listings": {
+                                            "label": "Listing"
                                         },
-                                        "new_homes": {
-                                            "label": "New Homes"
+                                        "valuations": {
+                                            "label": "Valuations"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "column_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.column_count",
+                            "priority": 18,
+                            "render": true,
+                            "label": "Columns",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": {
+                                            "label": "1"
                                         },
-                                        "auctions": {
-                                            "label": "Auctions"
+                                        "2": {
+                                            "label": "2"
+                                        },
+                                        "3": {
+                                            "label": "3"
+                                        },
+                                        "4": {
+                                            "label": "4"
+                                        },
+                                        "5": {
+                                            "label": "5"
+                                        },
+                                        "6": {
+                                            "label": "6"
                                         }
                                     }
                                 }
@@ -168,8 +222,8 @@
                         "item": {
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.property_type",
-                            "priority": 20,
-                            "render": true,
+                            "priority": 30,
+                            "render": false,
                             "label": "Property Type",
                             "component": {
                                 "name": "divi/select",
@@ -226,13 +280,40 @@
                             }
                         }
                     },
+                    "sector": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.sector",
+                            "priority": 20,
+                            "render": false,
+                            "label": "Residential / Commercial",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Residential / Commercial (Any)"
+                                        },
+                                        "residential": {
+                                            "label": "Residential"
+                                        },
+                                        "commercial": {
+                                            "label": "Commercial"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "overseas": {
                         "groupType": "group-item",
                         "item": {
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.overseas",
                             "priority": 30,
-                            "render": true,
+                            "render": false,
                             "label": "UK / Overseas",
                             "component": {
                                 "name": "divi/select",
@@ -256,7 +337,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.min_price",
                             "priority": 40,
-                            "render": true,
+                            "render": false,
                             "label": "Min. Price",
                             "component": {
                                 "name": "divi/select",
@@ -481,7 +562,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.max_price",
                             "priority": 50,
-                            "render": true,
+                            "render": false,
                             "label": "Max. Price",
                             "component": {
                                 "name": "divi/select",
@@ -706,7 +787,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.city",
                             "priority": 60,
-                            "render": true,
+                            "render": false,
                             "label": "Location",
                             "component": {
                                 "name": "divi/select",
@@ -775,7 +856,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.min_beds",
                             "priority": 70,
-                            "render": true,
+                            "render": false,
                             "label": "Min. Bedrooms",
                             "component": {
                                 "name": "divi/select",
@@ -826,7 +907,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.max_beds",
                             "priority": 80,
-                            "render": true,
+                            "render": false,
                             "label": "Max. Bedrooms",
                             "component": {
                                 "name": "divi/select",
@@ -877,7 +958,7 @@
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.sort",
                             "priority": 90,
-                            "render": true,
+                            "render": false,
                             "label": "Sort",
                             "component": {
                                 "name": "divi/select",
@@ -910,13 +991,54 @@
                             }
                         }
                     },
+                    "valuation_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.valuation_type",
+                            "priority": 85,
+                            "render": false,
+                            "label": "Valuation",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": {
+                                            "label": "Valuation (Any)"
+                                        },
+                                        "rental": {
+                                            "label": "Rental Valuation"
+                                        },
+                                        "sales": {
+                                            "label": "Sales Valuation"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "posts_per_page": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.posts_per_page",
+                            "priority": 88,
+                            "render": true,
+                            "label": "Properties per page",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
                     "empty_text": {
                         "groupType": "group-item",
                         "item": {
                             "groupSlug": "searchFields",
                             "attrName": "apex27.content.empty_text",
                             "priority": 100,
-                            "render": true,
+                            "render": false,
                             "label": "Empty Text",
                             "component": {
                                 "name": "divi/text",

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.6
+ * Version: 1.0.36
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.6' );
+define( 'DIVI_APEX27_VERSION', '1.0.36' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -53,6 +53,16 @@ function divi_apex27_register_settings() {
 			'default'           => '',
 		)
 	);
+
+	register_setting(
+		'divi_apex27_settings_group',
+		'divi_apex27_api_token',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		)
+	);
 }
 
 /**
@@ -82,7 +92,22 @@ function divi_apex27_render_settings_page() {
 
 	$website_url = get_option( 'divi_apex27_website_url', '' );
 	$api_key     = get_option( 'divi_apex27_api_key', '' );
+	$api_token   = get_option( 'divi_apex27_api_token', '' );
 	$legacy_url  = get_option( 'apex27_website_url', '' );
+	$legacy_key  = get_option( 'apex27_api_key', '' );
+	$legacy_token = get_option( 'apex27_api_token', '' );
+
+	if ( empty( $api_key ) && ! empty( $legacy_key ) ) {
+		$api_key = $legacy_key;
+	}
+
+	if ( empty( $api_token ) ) {
+		if ( ! empty( $legacy_token ) ) {
+			$api_token = $legacy_token;
+		} elseif ( ! empty( $api_key ) ) {
+			$api_token = $api_key;
+		}
+	}
 	?>
 	<div class="wrap">
 		<h1><?php echo esc_html__( 'Divi Apex27 Settings', 'divi-apex27' ); ?></h1>
@@ -107,6 +132,13 @@ function divi_apex27_render_settings_page() {
 					<td>
 						<input name="divi_apex27_api_key" type="text" id="divi_apex27_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" autocomplete="off" />
 						<p class="description"><?php echo esc_html__( 'API key used for Apex27 endpoints.', 'divi-apex27' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="divi_apex27_api_token"><?php echo esc_html__( 'API Token', 'divi-apex27' ); ?></label></th>
+					<td>
+						<input name="divi_apex27_api_token" type="text" id="divi_apex27_api_token" value="<?php echo esc_attr( $api_token ); ?>" class="regular-text" autocomplete="off" />
+						<p class="description"><?php echo esc_html__( 'Token used for Apex27 authenticated endpoints.', 'divi-apex27' ); ?></p>
 					</td>
 				</tr>
 			</table>
@@ -136,10 +168,29 @@ function divi_apex27_enqueue_assets() {
  * @return void
  */
 function divi_apex27_enqueue_builder_assets() {
+	$dependency_groups = array(
+		array( 'lodash' ),
+		array( 'divi-vendor-wp-hooks', 'wp-hooks' ),
+		array( 'divi-vendor-wp-i18n', 'wp-i18n' ),
+		array( 'divi-module-library' ),
+		array( 'divi-module' ),
+		array( 'react' ),
+	);
+
+	$dependencies = array();
+	foreach ( $dependency_groups as $group ) {
+		foreach ( $group as $handle ) {
+			if ( wp_script_is( $handle, 'registered' ) ) {
+				$dependencies[] = $handle;
+				break;
+			}
+		}
+	}
+
 	wp_register_script(
 		'divi-apex27-builder',
 		DIVI_APEX27_URL . 'assets/js/builder.js',
-		array( 'lodash', 'divi-vendor-wp-hooks', 'divi-vendor-wp-i18n', 'divi-module-library', 'divi-module', 'react' ),
+		$dependencies,
 		DIVI_APEX27_VERSION,
 		true
 	);

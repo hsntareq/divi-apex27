@@ -46,12 +46,6 @@ class Divi_Apex27_Module extends ET_Builder_Module {
 	 */
 	public function get_fields() {
 		return array(
-			'title' => array(
-				'label'           => esc_html__( 'Title', 'divi-apex27' ),
-				'type'            => 'text',
-				'option_category' => 'basic_option',
-				'default'         => '',
-			),
 			'type' => array(
 				'label'           => esc_html__( 'Type', 'divi-apex27' ),
 				'type'            => 'select',
@@ -59,64 +53,32 @@ class Divi_Apex27_Module extends ET_Builder_Module {
 				'options'         => self::type_options(),
 				'default'         => 'rent',
 			),
-			'property_type' => array(
-				'label'           => esc_html__( 'Property Type', 'divi-apex27' ),
+			'listing_type' => array(
+				'label'           => esc_html__( 'Listing Type', 'divi-apex27' ),
 				'type'            => 'select',
 				'option_category' => 'basic_option',
-				'options'         => self::property_type_options(),
-				'default'         => '',
+				'options'         => self::listing_type_options(),
+				'default'         => 'listings',
 			),
-			'overseas' => array(
-				'label'           => esc_html__( 'Location Scope', 'divi-apex27' ),
+			'column_count' => array(
+				'label'           => esc_html__( 'Columns', 'divi-apex27' ),
 				'type'            => 'select',
 				'option_category' => 'basic_option',
 				'options'         => array(
-					'0' => esc_html__( 'UK', 'divi-apex27' ),
-					'1' => esc_html__( 'Overseas', 'divi-apex27' ),
+					'1' => esc_html__( '1', 'divi-apex27' ),
+					'2' => esc_html__( '2', 'divi-apex27' ),
+					'3' => esc_html__( '3', 'divi-apex27' ),
+					'4' => esc_html__( '4', 'divi-apex27' ),
+					'5' => esc_html__( '5', 'divi-apex27' ),
+					'6' => esc_html__( '6', 'divi-apex27' ),
 				),
-				'default'         => '0',
+				'default'         => '4',
 			),
-			'min_price' => array(
-				'label'           => esc_html__( 'Min. Price', 'divi-apex27' ),
-				'type'            => 'select',
+			'posts_per_page' => array(
+				'label'           => esc_html__( 'Properties per page', 'divi-apex27' ),
+				'type'            => 'text',
 				'option_category' => 'basic_option',
-				'options'         => self::price_options(),
-				'default'         => '',
-			),
-			'max_price' => array(
-				'label'           => esc_html__( 'Max. Price', 'divi-apex27' ),
-				'type'            => 'select',
-				'option_category' => 'basic_option',
-				'options'         => self::price_options(),
-				'default'         => '',
-			),
-			'city' => array(
-				'label'           => esc_html__( 'Location', 'divi-apex27' ),
-				'type'            => 'select',
-				'option_category' => 'basic_option',
-				'options'         => self::city_options(),
-				'default'         => '',
-			),
-			'min_beds' => array(
-				'label'           => esc_html__( 'Min. Bedrooms', 'divi-apex27' ),
-				'type'            => 'select',
-				'option_category' => 'basic_option',
-				'options'         => self::bedroom_options( 'min' ),
-				'default'         => '',
-			),
-			'max_beds' => array(
-				'label'           => esc_html__( 'Max. Bedrooms', 'divi-apex27' ),
-				'type'            => 'select',
-				'option_category' => 'basic_option',
-				'options'         => self::bedroom_options( 'max' ),
-				'default'         => '',
-			),
-			'sort' => array(
-				'label'           => esc_html__( 'Sort', 'divi-apex27' ),
-				'type'            => 'select',
-				'option_category' => 'basic_option',
-				'options'         => self::sort_options(),
-				'default'         => 'highest_price',
+				'default'         => '27',
 			),
 		);
 	}
@@ -128,13 +90,23 @@ class Divi_Apex27_Module extends ET_Builder_Module {
 	 */
 	private static function type_options() {
 		return array(
-			'sale'            => esc_html__( 'Sales', 'divi-apex27' ),
-			'rent'            => esc_html__( 'Lettings', 'divi-apex27' ),
+			'sale'            => esc_html__( 'Sales (Residential)', 'divi-apex27' ),
+			'rent'            => esc_html__( 'Lettings (Residential)', 'divi-apex27' ),
 			'land'            => esc_html__( 'Land', 'divi-apex27' ),
-			'commercial_sale' => esc_html__( 'Commercial Sales', 'divi-apex27' ),
-			'commercial_rent' => esc_html__( 'Commercial Lettings', 'divi-apex27' ),
-			'new_homes'       => esc_html__( 'New Homes', 'divi-apex27' ),
-			'auctions'        => esc_html__( 'Auctions', 'divi-apex27' ),
+			'commercial_sale' => esc_html__( 'Sales (Commercial)', 'divi-apex27' ),
+			'commercial_rent' => esc_html__( 'Lettings (Commercial)', 'divi-apex27' ),
+		);
+	}
+
+	/**
+	 * Listing endpoint options.
+	 *
+	 * @return array
+	 */
+	private static function listing_type_options() {
+		return array(
+			'listings'   => esc_html__( 'Listing', 'divi-apex27' ),
+			'valuations' => esc_html__( 'Valuations', 'divi-apex27' ),
 		);
 	}
 
