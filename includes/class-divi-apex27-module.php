@@ -64,7 +64,7 @@ class Divi_Apex27_Module extends ET_Builder_Module {
 				'type'            => 'select',
 				'option_category' => 'basic_option',
 				'options'         => self::property_type_options(),
-				'default'         => 'flat',
+				'default'         => '',
 			),
 			'overseas' => array(
 				'label'           => esc_html__( 'Location Scope', 'divi-apex27' ),

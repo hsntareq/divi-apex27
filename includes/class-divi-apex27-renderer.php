@@ -23,13 +23,15 @@ class Divi_Apex27_Renderer {
 		return array(
 			'title'         => '',
 			'type'          => 'rent',
-			'property_type' => 'flat',
+			'property_type' => '',
 			'overseas'      => '0',
 			'min_price'     => '',
 			'max_price'     => '',
 			'city'          => '',
 			'min_beds'      => '',
 			'max_beds'      => '',
+			'min_gross_yield' => '',
+			'include_sstc'    => '',
 			'sort'          => 'highest_price',
 			'empty_text'    => __( 'No properties found.', 'divi-apex27' ),
 		);
@@ -66,19 +68,17 @@ class Divi_Apex27_Renderer {
 		$props = wp_parse_args( $props, self::defaults() );
 		$query = self::current_query( $props );
 		$api   = new Divi_Apex27_API();
+		$is_builder_preview = self::is_builder_preview();
+		$wrapper_class      = 'divi-apex27-property-filter' . ( $is_builder_preview ? ' divi-apex27-builder-mode' : '' );
 
-		$output  = '<div class="divi-apex27-property-filter">';
+		$output  = sprintf( '<div class="%s">', esc_attr( $wrapper_class ) );
 		$output .= self::render_heading( $props['title'] );
-
-		if ( self::is_builder_preview() ) {
-			$output .= self::render_filter_preview( $query );
-		}
 
 		if ( ! $api->is_configured() ) {
 			$output .= self::render_notice( __( 'Configure the Website URL and API Key in Settings > Apex27 before using this module.', 'divi-apex27' ) );
 		} else {
 			$result = $api->get_listings( $query );
-			$output .= is_wp_error( $result ) ? self::render_notice( $result->get_error_message() ) : self::render_results( $result, $props['empty_text'] );
+			$output .= is_wp_error( $result ) ? self::render_notice( $result->get_error_message() ) : self::render_results( $result, $props['empty_text'], $is_builder_preview );
 		}
 
 		return $output . '</div>';
@@ -92,14 +92,38 @@ class Divi_Apex27_Renderer {
 	 * @return array
 	 */
 	private static function current_query( array $props ) {
-		$fields = array( 'type', 'property_type', 'overseas', 'min_price', 'max_price', 'city', 'min_beds', 'max_beds', 'sort' );
-		$query  = array();
+		$aliases = array(
+			'type'          => array( 'apex27_type', 'transaction_type' ),
+			'property_type' => array( 'apex27_property_type', 'propertyType' ),
+			'overseas'      => array( 'apex27_overseas' ),
+			'min_price'     => array( 'apex27_min_price', 'minPrice' ),
+			'max_price'     => array( 'apex27_max_price', 'maxPrice' ),
+			'city'          => array( 'apex27_city', 'apex27_query', 'query' ),
+			'min_beds'      => array( 'apex27_min_beds', 'apex27_bedrooms', 'minBeds' ),
+			'max_beds'      => array( 'apex27_max_beds', 'maxBeds' ),
+			'min_gross_yield' => array( 'apex27_min_gross_yield' ),
+			'include_sstc'    => array( 'apex27_include_sstc' ),
+			'sort'          => array( 'apex27_sort' ),
+			'page'          => array( 'apex27_page' ),
+		);
+		$query = array();
 
-		foreach ( $fields as $field ) {
-			$query[ $field ] = isset( $props[ $field ] ) ? sanitize_text_field( (string) $props[ $field ] ) : '';
+		foreach ( $aliases as $canonical => $keys ) {
+			$value = isset( $props[ $canonical ] ) ? sanitize_text_field( (string) $props[ $canonical ] ) : '';
+
+			if ( isset( $_GET[ $canonical ] ) && ! is_array( $_GET[ $canonical ] ) ) {
+				$value = sanitize_text_field( wp_unslash( $_GET[ $canonical ] ) );
+			}
+
+			foreach ( $keys as $key ) {
+				if ( isset( $_GET[ $key ] ) && ! is_array( $_GET[ $key ] ) ) {
+					$value = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+					break;
+				}
+			}
+
+			$query[ $canonical ] = $value;
 		}
-
-		$query['page'] = isset( $props['page'] ) ? sanitize_text_field( (string) $props['page'] ) : '';
 
 		return $query;
 	}
@@ -117,65 +141,6 @@ class Divi_Apex27_Renderer {
 		}
 
 		return sprintf( '<h2 class="divi-apex27-title">%s</h2>', esc_html( $title ) );
-	}
-
-	/**
-	 * Render a read-only Apex27-style filter preview for Divi Builder.
-	 *
-	 * @param array $query Query values.
-	 *
-	 * @return string
-	 */
-	private static function render_filter_preview( array $query ) {
-		$output  = '<div class="divi-apex27-preview" aria-label="' . esc_attr__( 'Apex27 filter preview', 'divi-apex27' ) . '">';
-		$output .= self::preview_select( 'type', __( 'Type', 'divi-apex27' ), $query['type'], self::type_options() );
-		$output .= self::preview_select( 'property_type', __( 'Property Type', 'divi-apex27' ), $query['property_type'], self::property_type_options() );
-		$output .= self::preview_select( 'overseas', __( 'Overseas', 'divi-apex27' ), $query['overseas'], self::overseas_options() );
-		$output .= self::preview_select( 'min_price', __( 'Min. Price', 'divi-apex27' ), $query['min_price'], self::price_options(), __( 'Min. Price', 'divi-apex27' ) );
-		$output .= self::preview_select( 'max_price', __( 'Max. Price', 'divi-apex27' ), $query['max_price'], self::price_options(), __( 'Max. Price', 'divi-apex27' ) );
-		$output .= self::preview_select( 'city', __( 'City', 'divi-apex27' ), $query['city'], self::city_options(), __( 'Location', 'divi-apex27' ) );
-		$output .= self::preview_select( 'min_beds', __( 'Min. Bedrooms', 'divi-apex27' ), $query['min_beds'], self::bedroom_options( 'min' ), __( 'Min. Bedrooms', 'divi-apex27' ) );
-		$output .= self::preview_select( 'max_beds', __( 'Max. Bedrooms', 'divi-apex27' ), $query['max_beds'], self::bedroom_options( 'max' ), __( 'Max. Bedrooms', 'divi-apex27' ) );
-		$output .= self::preview_select( 'sort', __( 'Sort', 'divi-apex27' ), $query['sort'], self::sort_options() );
-		$output .= '<span class="divi-apex27-preview-button">' . esc_html__( 'Update', 'divi-apex27' ) . '</span>';
-		$output .= '</div>';
-
-		return $output;
-	}
-
-	/**
-	 * Render a disabled select for builder preview.
-	 *
-	 * @param string $name        Field name.
-	 * @param string $label       Field label.
-	 * @param string $value       Selected value.
-	 * @param array  $options     Select options.
-	 * @param string $placeholder Placeholder label.
-	 *
-	 * @return string
-	 */
-	private static function preview_select( $name, $label, $value, array $options, $placeholder = '' ) {
-		$output = sprintf(
-			'<label class="divi-apex27-preview-field"><span class="screen-reader-text">%s</span><select name="%s" aria-label="%s" disabled>',
-			esc_html( $label ),
-			esc_attr( $name ),
-			esc_attr( $label )
-		);
-
-		if ( '' !== $placeholder && ! isset( $options[''] ) ) {
-			$output .= sprintf( '<option value="">%s</option>', esc_html( $placeholder ) );
-		}
-
-		foreach ( $options as $option_value => $option_label ) {
-			$output .= sprintf(
-				'<option value="%s" %s>%s</option>',
-				esc_attr( $option_value ),
-				selected( (string) $value, (string) $option_value, false ),
-				esc_html( $option_label )
-			);
-		}
-
-		return $output . '</select></label>';
 	}
 
 	/**
@@ -349,27 +314,21 @@ class Divi_Apex27_Renderer {
 	/**
 	 * Render listing results.
 	 *
-	 * @param object $result     Apex27 result object.
-	 * @param string $empty_text Empty message.
+	 * @param object $result             Apex27 result object.
+	 * @param string $empty_text         Empty message.
+	 * @param bool   $show_builder_debug Whether to show response diagnostics.
 	 *
 	 * @return string
 	 */
-	private static function render_results( $result, $empty_text ) {
-		$items = array();
-
-		if ( is_array( $result ) && isset( $result[0] ) ) {
-			$items = $result;
-		} elseif ( is_object( $result ) ) {
-			foreach ( array( 'listings', 'properties', 'results', 'items', 'data' ) as $key ) {
-				if ( isset( $result->{$key} ) && is_array( $result->{$key} ) ) {
-					$items = $result->{$key};
-					break;
-				}
-			}
-		}
+	private static function render_results( $result, $empty_text, $show_builder_debug = false ) {
+		$items = self::extract_items( $result );
 
 		if ( empty( $items ) ) {
-			return self::render_notice( $empty_text );
+			$notice = self::render_notice( $empty_text );
+			if ( $show_builder_debug ) {
+				$notice .= self::render_builder_debug( $result );
+			}
+			return $notice;
 		}
 
 		$output = '<div class="divi-apex27-results">';
@@ -379,6 +338,71 @@ class Divi_Apex27_Renderer {
 		}
 
 		return $output . '</div>';
+	}
+
+	/**
+	 * Extract listings from known Apex27 response shapes.
+	 *
+	 * @param mixed $result API result.
+	 *
+	 * @return array
+	 */
+	private static function extract_items( $result ) {
+		if ( is_array( $result ) ) {
+			if ( isset( $result[0] ) ) {
+				return $result;
+			}
+
+			foreach ( array( 'listings', 'properties', 'results', 'items', 'data' ) as $key ) {
+				if ( isset( $result[ $key ] ) && is_array( $result[ $key ] ) ) {
+					return $result[ $key ];
+				}
+			}
+		}
+
+		if ( is_object( $result ) ) {
+			foreach ( array( 'listings', 'properties', 'results', 'items', 'data' ) as $key ) {
+				if ( isset( $result->{$key} ) && is_array( $result->{$key} ) ) {
+					return $result->{$key};
+				}
+
+				if ( isset( $result->{$key} ) && is_object( $result->{$key} ) ) {
+					$nested_items = self::extract_items( $result->{$key} );
+					if ( ! empty( $nested_items ) ) {
+						return $nested_items;
+					}
+				}
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Render builder-only diagnostic output when the API returns no cards.
+	 *
+	 * @param mixed $result API result.
+	 *
+	 * @return string
+	 */
+	private static function render_builder_debug( $result ) {
+		$keys = array();
+
+		if ( is_object( $result ) ) {
+			$keys = array_keys( get_object_vars( $result ) );
+		} elseif ( is_array( $result ) ) {
+			$keys = array_keys( $result );
+		}
+
+		$message = $keys
+			? sprintf(
+				/* translators: %s: response keys. */
+				__( 'Builder debug: Apex27 responded, but no listings were found in these response keys: %s.', 'divi-apex27' ),
+				implode( ', ', array_map( 'sanitize_text_field', $keys ) )
+			)
+			: __( 'Builder debug: Apex27 returned an empty response.', 'divi-apex27' );
+
+		return sprintf( '<div class="divi-apex27-debug">%s</div>', esc_html( $message ) );
 	}
 
 	/**

@@ -14,6 +14,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Divi_Apex27_API {
 
+	const DIVI_WEBSITE_URL_OPTION = 'divi_apex27_website_url';
+	const DIVI_API_KEY_OPTION     = 'divi_apex27_api_key';
 	const WEBSITE_URL_OPTION = 'apex27_website_url';
 	const API_KEY_OPTION     = 'apex27_api_key';
 
@@ -74,6 +76,8 @@ class Divi_Apex27_API {
 			'city'             => $query['city'] ?? '',
 			'min_beds'         => $query['min_beds'] ?? '',
 			'max_beds'         => $query['max_beds'] ?? '',
+			'min_gross_yield'  => $query['min_gross_yield'] ?? '',
+			'include_sstc'     => $query['include_sstc'] ?? '',
 			'sort'             => $query['sort'] ?? 'highest_price',
 			'page'             => $query['page'] ?? '',
 			'locale'           => get_locale(),
@@ -147,7 +151,13 @@ class Divi_Apex27_API {
 	 * @return string
 	 */
 	private function get_website_url() {
-		return untrailingslashit( esc_url_raw( (string) get_option( self::WEBSITE_URL_OPTION, '' ) ) );
+		$website_url = (string) get_option( self::DIVI_WEBSITE_URL_OPTION, '' );
+
+		if ( '' === trim( $website_url ) ) {
+			$website_url = (string) get_option( self::WEBSITE_URL_OPTION, '' );
+		}
+
+		return untrailingslashit( esc_url_raw( $website_url ) );
 	}
 
 	/**
@@ -156,6 +166,12 @@ class Divi_Apex27_API {
 	 * @return string
 	 */
 	private function get_api_key() {
-		return (string) get_option( self::API_KEY_OPTION, '' );
+		$api_key = (string) get_option( self::DIVI_API_KEY_OPTION, '' );
+
+		if ( '' === trim( $api_key ) ) {
+			$api_key = (string) get_option( self::API_KEY_OPTION, '' );
+		}
+
+		return $api_key;
 	}
 }

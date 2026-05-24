@@ -25,6 +25,7 @@
 	}
 
 	function registerModule() {
+		try {
 		if (window.diviApex27PropertyFilterRegistered) {
 			return true;
 		}
@@ -48,21 +49,31 @@
 		divi.moduleLibrary.registerModule(metadata, {
 			renderers: {
 				edit: function(props) {
-					const currentDivi = window.divi || window.vendor?.divi || window.parent?.divi;
-					const serverRenderedModule = findComponent(currentDivi?.module, 'ServerRenderedModule') ||
-						findComponent(currentDivi?.moduleLibrary, 'ServerRenderedModule');
+					try {
+						const currentDivi = window.divi || window.vendor?.divi || window.parent?.divi;
+						const serverRenderedModule = currentDivi?.module?.ServerRenderedModule ||
+							currentDivi?.module?.server?.ServerRenderedModule ||
+							currentDivi?.moduleLibrary?.ServerRenderedModule ||
+							findComponent(currentDivi?.module, 'ServerRenderedModule') ||
+							findComponent(currentDivi?.moduleLibrary, 'ServerRenderedModule');
 
-					if (!serverRenderedModule) {
-						return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Loading Apex27 Property Filter...');
+						if (!serverRenderedModule) {
+							return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Loading Apex27 property results...');
+						}
+
+						return React.createElement(serverRenderedModule, props);
+					} catch (error) {
+						return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Apex27 preview error. Save and reload builder.');
 					}
-
-					return React.createElement(serverRenderedModule, props);
 				}
 			}
 		});
 
 		window.diviApex27PropertyFilterRegistered = true;
 		return true;
+		} catch (error) {
+			return false;
+		}
 	}
 
 	if (hooks) {

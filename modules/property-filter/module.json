@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/property-filter",
-    "version": "1.0.0",
+    "version": "1.0.3",
     "apiVersion": 2,
     "title": "Apex27 Property Filter",
     "titles": "Apex27 Property Filters",
@@ -15,34 +15,34 @@
             "selector": "{{selector}}",
             "settings": {
                 "meta": {
-                    "meta": []
+                    "meta": {}
                 },
                 "advanced": {
-                    "html": [],
-                    "link": [],
-                    "text": [],
-                    "loop": []
+                    "html": {},
+                    "link": {},
+                    "text": {},
+                    "loop": {}
                 },
                 "decoration": {
-                    "animation": [],
-                    "attributes": [],
-                    "background": [],
-                    "border": [],
-                    "boxShadow": [],
-                    "conditions": [],
-                    "disabledOn": [],
-                    "filters": [],
-                    "interactions": [],
-                    "overflow": [],
-                    "order": [],
-                    "position": [],
-                    "scroll": [],
-                    "sizing": [],
-                    "spacing": [],
-                    "sticky": [],
-                    "transform": [],
-                    "transition": [],
-                    "zIndex": []
+                    "animation": {},
+                    "attributes": {},
+                    "background": {},
+                    "border": {},
+                    "boxShadow": {},
+                    "conditions": {},
+                    "disabledOn": {},
+                    "filters": {},
+                    "interactions": {},
+                    "overflow": {},
+                    "order": {},
+                    "position": {},
+                    "scroll": {},
+                    "sizing": {},
+                    "spacing": {},
+                    "sticky": {},
+                    "transform": {},
+                    "transition": {},
+                    "zIndex": {}
                 }
             }
         },
@@ -63,7 +63,7 @@
                     },
                     "property_type": {
                         "desktop": {
-                            "value": "flat"
+                            "value": ""
                         }
                     },
                     "overseas": {
@@ -928,7 +928,7 @@
             }
         }
     },
-    "customCssFields": [],
+    "customCssFields": {},
     "settings": {
         "content": "auto",
         "design": "auto",

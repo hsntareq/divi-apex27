@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.0
+ * Version: 1.0.6
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.0' );
+define( 'DIVI_APEX27_VERSION', '1.0.6' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -24,7 +24,97 @@ add_action( 'divi_visual_builder_assets_before_enqueue_scripts', 'divi_apex27_en
 add_action( 'et_builder_ready', 'divi_apex27_register_modules' );
 add_action( 'divi_module_library_register_modules', 'divi_apex27_register_modules' );
 add_action( 'init', 'divi_apex27_register_modules', 20 );
+add_action( 'admin_init', 'divi_apex27_register_settings' );
+add_action( 'admin_menu', 'divi_apex27_register_settings_page' );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
+
+/**
+ * Register settings fields for Divi Apex27.
+ *
+ * @return void
+ */
+function divi_apex27_register_settings() {
+	register_setting(
+		'divi_apex27_settings_group',
+		'divi_apex27_website_url',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'esc_url_raw',
+			'default'           => '',
+		)
+	);
+
+	register_setting(
+		'divi_apex27_settings_group',
+		'divi_apex27_api_key',
+		array(
+			'type'              => 'string',
+			'sanitize_callback' => 'sanitize_text_field',
+			'default'           => '',
+		)
+	);
+}
+
+/**
+ * Register settings page under WordPress Settings menu.
+ *
+ * @return void
+ */
+function divi_apex27_register_settings_page() {
+	add_options_page(
+		esc_html__( 'Divi Apex27 Settings', 'divi-apex27' ),
+		esc_html__( 'Divi Apex27', 'divi-apex27' ),
+		'manage_options',
+		'divi-apex27',
+		'divi_apex27_render_settings_page'
+	);
+}
+
+/**
+ * Render settings page.
+ *
+ * @return void
+ */
+function divi_apex27_render_settings_page() {
+	if ( ! current_user_can( 'manage_options' ) ) {
+		return;
+	}
+
+	$website_url = get_option( 'divi_apex27_website_url', '' );
+	$api_key     = get_option( 'divi_apex27_api_key', '' );
+	$legacy_url  = get_option( 'apex27_website_url', '' );
+	?>
+	<div class="wrap">
+		<h1><?php echo esc_html__( 'Divi Apex27 Settings', 'divi-apex27' ); ?></h1>
+		<p><?php echo esc_html__( 'These settings mirror the Apex27 connection values used for API requests.', 'divi-apex27' ); ?></p>
+
+		<?php if ( empty( $website_url ) && ! empty( $legacy_url ) ) : ?>
+			<div class="notice notice-info inline"><p><?php echo esc_html__( 'Legacy Apex27 settings were detected. You can keep using them, or save values here to override for Divi Apex27 only.', 'divi-apex27' ); ?></p></div>
+		<?php endif; ?>
+
+		<form method="post" action="options.php">
+			<?php settings_fields( 'divi_apex27_settings_group' ); ?>
+			<table class="form-table" role="presentation">
+				<tr>
+					<th scope="row"><label for="divi_apex27_website_url"><?php echo esc_html__( 'Website URL', 'divi-apex27' ); ?></label></th>
+					<td>
+						<input name="divi_apex27_website_url" type="url" id="divi_apex27_website_url" value="<?php echo esc_attr( $website_url ); ?>" class="regular-text" placeholder="https://example.com" />
+						<p class="description"><?php echo esc_html__( 'Base URL of your Apex27 website.', 'divi-apex27' ); ?></p>
+					</td>
+				</tr>
+				<tr>
+					<th scope="row"><label for="divi_apex27_api_key"><?php echo esc_html__( 'API Key', 'divi-apex27' ); ?></label></th>
+					<td>
+						<input name="divi_apex27_api_key" type="text" id="divi_apex27_api_key" value="<?php echo esc_attr( $api_key ); ?>" class="regular-text" autocomplete="off" />
+						<p class="description"><?php echo esc_html__( 'API key used for Apex27 endpoints.', 'divi-apex27' ); ?></p>
+					</td>
+				</tr>
+			</table>
+			<?php submit_button(); ?>
+		</form>
+	</div>
+	<?php
+}
 
 /**
  * Enqueue frontend assets.
@@ -49,7 +139,7 @@ function divi_apex27_enqueue_builder_assets() {
 	wp_register_script(
 		'divi-apex27-builder',
 		DIVI_APEX27_URL . 'assets/js/builder.js',
-		array( 'lodash', 'divi-vendor-wp-hooks', 'divi-vendor-wp-i18n' ),
+		array( 'lodash', 'divi-vendor-wp-hooks', 'divi-vendor-wp-i18n', 'divi-module-library', 'divi-module', 'react' ),
 		DIVI_APEX27_VERSION,
 		true
 	);
@@ -117,16 +207,29 @@ function divi_apex27_register_modules() {
  */
 function divi_apex27_render_callback( $attrs, $content, $block, $elements ) {
 	$output = Divi_Apex27_Renderer::render( Divi_Apex27_Renderer::attrs_to_props( $attrs ) );
+	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
+	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
 
 	if ( class_exists( 'ET\Builder\Packages\Module\Module' ) ) {
+		$style_components = '';
+		if ( is_object( $elements ) && method_exists( $elements, 'style_components' ) ) {
+			$style_components = $elements->style_components(
+				array(
+					'attrName' => 'module',
+				)
+			);
+		}
+
 		return ET\Builder\Packages\Module\Module::render(
 			array(
-				'attrs'          => $attrs,
-				'elements'       => $elements,
-				'id'             => $block->parsed_block['id'] ?? '',
-				'name'           => $block->block_type->name,
-				'moduleCategory' => $block->block_type->category,
-				'children'       => $output . $content,
+				'attrs'              => $attrs,
+				'elements'           => $elements,
+				'id'                 => $parsed_block['id'] ?? '',
+				'name'               => is_object( $block_type ) && isset( $block_type->name ) ? $block_type->name : 'divi-apex27/property-filter',
+				'moduleCategory'     => is_object( $block_type ) && isset( $block_type->category ) ? $block_type->category : 'module',
+				'orderIndex'         => $parsed_block['orderIndex'] ?? null,
+				'storeInstance'      => $parsed_block['storeInstance'] ?? null,
+				'children'           => $style_components . $output . $content,
 			)
 		);
 	}
