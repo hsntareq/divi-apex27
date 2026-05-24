@@ -24,6 +24,7 @@ class Divi_Apex27_Renderer {
 			'title'         => '',
 			'listing_type'  => 'listings',
 			'type'          => 'rent',
+			'row_count'     => '2',
 			'column_count'  => '4',
 			'sector'        => '',
 			'property_type' => '',
@@ -78,6 +79,9 @@ class Divi_Apex27_Renderer {
 			$output .= self::render_notice( __( 'Configure the Website URL and API Key in Settings > Apex27 before using this module.', 'divi-apex27' ) );
 		} else {
 			$result = $api->get_listings( $query );
+			if ( ! is_wp_error( $result ) ) {
+				$result = self::maybe_enrich_valuations_with_listings( $result, $query, $api );
+			}
 			$output .= is_wp_error( $result ) ? self::render_notice( $result->get_error_message() ) : self::render_results( $result, $props['empty_text'], $is_builder_preview, $query, $props );
 		}
 
@@ -103,14 +107,14 @@ class Divi_Apex27_Renderer {
 			'min_gross_yield' => array( 'apex27_min_gross_yield' ),
 			'include_sstc'    => array( 'apex27_include_sstc' ),
 			'sort'          => array( 'apex27_sort' ),
-			'page'          => array( 'apex27_page', 'paged', 'page' ),
+			'page'          => array( 'pageApex', 'page', 'apex27_page', 'paged' ),
 		);
 		$query = array();
 
 		foreach ( $aliases as $canonical => $keys ) {
 			$value = isset( $props[ $canonical ] ) ? sanitize_text_field( (string) $props[ $canonical ] ) : '';
 
-			if ( 'page' !== $canonical && isset( $_GET[ $canonical ] ) && ! is_array( $_GET[ $canonical ] ) ) {
+			if ( isset( $_GET[ $canonical ] ) && ! is_array( $_GET[ $canonical ] ) ) {
 				$value = sanitize_text_field( wp_unslash( $_GET[ $canonical ] ) );
 			}
 
@@ -123,6 +127,44 @@ class Divi_Apex27_Renderer {
 
 			$query[ $canonical ] = $value;
 		}
+
+		$resolved_page = self::requested_page_from_url();
+		if ( $resolved_page > 0 ) {
+			$query['page'] = (string) $resolved_page;
+		}
+
+		$rows    = isset( $props['row_count'] ) ? absint( $props['row_count'] ) : 0;
+		$columns = isset( $props['column_count'] ) ? absint( $props['column_count'] ) : 0;
+		$display_page_size = isset( $query['posts_per_page'] ) ? absint( $query['posts_per_page'] ) : 0;
+
+		if ( $rows > 0 && $columns > 0 ) {
+			$display_page_size = $rows * $columns;
+			$query['posts_per_page'] = (string) $display_page_size;
+		}
+
+		if ( $display_page_size < 1 ) {
+			$display_page_size = 27;
+		}
+
+		$display_page = isset( $query['page'] ) ? absint( $query['page'] ) : self::requested_page_from_url();
+		if ( $display_page < 1 ) {
+			$display_page = 1;
+		}
+
+		$remote_page_size = $display_page_size;
+		if ( $display_page_size < 25 ) {
+			$remote_page_size = $display_page_size * ( intdiv( 25, $display_page_size ) + 1 );
+		}
+
+		$pagination_group_size = max( 1, (int) ceil( $remote_page_size / max( 1, $display_page_size ) ) );
+		$remote_page           = (int) ceil( $display_page / $pagination_group_size );
+
+		$query['display_page']            = (string) $display_page;
+		$query['display_posts_per_page']  = (string) $display_page_size;
+		$query['pagination_group_size']   = (string) $pagination_group_size;
+		$query['remote_posts_per_page']   = (string) $remote_page_size;
+		$query['page']                    = (string) max( 1, $remote_page );
+		$query['posts_per_page']          = (string) $remote_page_size;
 
 		return $query;
 	}
@@ -319,26 +361,38 @@ class Divi_Apex27_Renderer {
 	 * @return string
 	 */
 	private static function render_results( $result, $empty_text, $show_builder_debug = false, array $query = array(), array $props = array() ) {
-		$items = self::extract_items( $result );
-		$page_size = isset( $query['posts_per_page'] ) ? absint( $query['posts_per_page'] ) : 27;
-		$current_page = isset( $query['page'] ) ? absint( $query['page'] ) : self::requested_page_from_url();
-		$fetch_meta   = self::extract_fetch_meta( $result );
-		$slice_offset = 0;
+		$items             = self::extract_items( $result );
+		$display_page_size = isset( $query['display_posts_per_page'] ) ? absint( $query['display_posts_per_page'] ) : ( isset( $query['posts_per_page'] ) ? absint( $query['posts_per_page'] ) : 27 );
+		$current_page      = isset( $query['display_page'] ) ? absint( $query['display_page'] ) : self::requested_page_from_url();
+		$remote_page_size  = isset( $query['remote_posts_per_page'] ) ? absint( $query['remote_posts_per_page'] ) : ( isset( $query['posts_per_page'] ) ? absint( $query['posts_per_page'] ) : $display_page_size );
+		$pagination_group_size = isset( $query['pagination_group_size'] ) ? absint( $query['pagination_group_size'] ) : 1;
+		$remote_page       = isset( $query['page'] ) ? absint( $query['page'] ) : 1;
+		$raw_count         = count( $items );
 
-		if ( $page_size < 1 ) {
-			$page_size = 27;
+		if ( $display_page_size < 1 ) {
+			$display_page_size = 27;
 		}
 
 		if ( $current_page < 1 ) {
 			$current_page = 1;
 		}
 
-		if ( ! empty( $fetch_meta['aggregated'] ) && $current_page > 1 ) {
-			$slice_offset = ( $current_page - 1 ) * $page_size;
+		if ( $remote_page_size < 1 ) {
+			$remote_page_size = $display_page_size;
 		}
 
-		if ( count( $items ) > $page_size || $slice_offset > 0 ) {
-			$items = array_slice( $items, $slice_offset, $page_size );
+		if ( $pagination_group_size < 1 ) {
+			$pagination_group_size = max( 1, (int) ceil( $remote_page_size / max( 1, $display_page_size ) ) );
+		}
+
+		if ( $remote_page < 1 ) {
+			$remote_page = 1;
+		}
+
+		if ( $raw_count > $display_page_size ) {
+			$display_page_index_within_group = max( 0, ( $current_page - 1 ) % $pagination_group_size );
+			$slice_offset                    = $display_page_index_within_group * $display_page_size;
+			$items                           = array_slice( $items, $slice_offset, $display_page_size );
 		}
 
 		if ( empty( $items ) ) {
@@ -356,7 +410,7 @@ class Divi_Apex27_Renderer {
 			$output .= self::render_card( is_object( $item ) ? $item : (object) $item );
 		}
 
-		$output .= self::render_pagination( $result, count( $items ), $page_size );
+		$output .= self::render_pagination( $result, $raw_count, $display_page_size, $current_page, $pagination_group_size, $remote_page, $remote_page_size );
 
 		return $output . '</div>';
 	}
@@ -394,13 +448,13 @@ class Divi_Apex27_Renderer {
 	 * Render pagination controls when API metadata exposes multiple pages.
 	 *
 	 * @param mixed $result API result.
-	 * @param int   $count      Number of items in current page.
+	 * @param int   $raw_count  Number of items before local slicing.
 	 * @param int   $page_size  Requested per-page count.
 	 *
 	 * @return string
 	 */
-	private static function render_pagination( $result, $count, $page_size = 10 ) {
-		$pagination = self::extract_pagination( $result, $count, $page_size );
+	private static function render_pagination( $result, $raw_count, $display_page_size = 10, $display_page = 1, $pagination_group_size = 1, $remote_page = 1, $remote_page_size = 10 ) {
+		$pagination = self::extract_pagination( $result, $raw_count, $display_page_size, $display_page, $pagination_group_size, $remote_page, $remote_page_size );
 
 		if ( empty( $pagination['total_pages'] ) || $pagination['total_pages'] < 2 ) {
 			return '';
@@ -421,7 +475,7 @@ class Divi_Apex27_Renderer {
 		if ( $current_page > 1 ) {
 			$output .= sprintf(
 				'<a class="divi-apex27-page-link prev" href="%s">%s</a>',
-				esc_url( self::build_page_url( $current_page - 1, $page_size ) ),
+				esc_url( self::build_page_url( $current_page - 1, $display_page_size ) ),
 				esc_html__( 'Previous', 'divi-apex27' )
 			);
 		}
@@ -434,7 +488,7 @@ class Divi_Apex27_Renderer {
 
 			$output .= sprintf(
 				'<a class="divi-apex27-page-link" href="%s">%d</a>',
-				esc_url( self::build_page_url( $page, $page_size ) ),
+				esc_url( self::build_page_url( $page, $display_page_size ) ),
 				absint( $page )
 			);
 		}
@@ -442,7 +496,7 @@ class Divi_Apex27_Renderer {
 		if ( $current_page < $total_pages ) {
 			$output .= sprintf(
 				'<a class="divi-apex27-page-link next" href="%s">%s</a>',
-				esc_url( self::build_page_url( $current_page + 1, $page_size ) ),
+				esc_url( self::build_page_url( $current_page + 1, $display_page_size ) ),
 				esc_html__( 'Next', 'divi-apex27' )
 			);
 		}
@@ -454,35 +508,27 @@ class Divi_Apex27_Renderer {
 	 * Extract pagination details from common API response shapes.
 	 *
 	 * @param mixed $result API result.
-	 * @param int   $count      Number of items in current page.
+	 * @param int   $raw_count  Number of items before local slicing.
 	 * @param int   $page_size  Requested per-page count.
 	 *
 	 * @return array
 	 */
-	private static function extract_pagination( $result, $count, $page_size = 10 ) {
-		$requested_page = self::requested_page_from_url();
-		$current_page = $requested_page;
-		$total_pages = 0;
-		$page_size   = max( 1, absint( $page_size ) );
+	private static function extract_pagination( $result, $raw_count, $display_page_size = 10, $display_page = 1, $pagination_group_size = 1, $remote_page = 1, $remote_page_size = 10 ) {
+		$requested_page = max( 1, absint( $display_page ) );
+		$current_page   = $requested_page;
+		$total_pages    = 0;
+		$display_page_size = max( 1, absint( $display_page_size ) );
+		$pagination_group_size = max( 1, absint( $pagination_group_size ) );
+		$remote_page = max( 1, absint( $remote_page ) );
+		$remote_page_size = max( 1, absint( $remote_page_size ) );
+		$remote_total_pages = 0;
 
 		$candidates = self::find_pagination_candidate_arrays( $result );
 
 		foreach ( $candidates as $candidate ) {
-			if ( isset( $candidate['current_page'] ) && is_numeric( $candidate['current_page'] ) ) {
-				$current_page = max( 1, absint( $candidate['current_page'] ) );
-			} elseif ( isset( $candidate['currentPage'] ) && is_numeric( $candidate['currentPage'] ) ) {
-				$current_page = max( 1, absint( $candidate['currentPage'] ) );
-			} elseif ( isset( $candidate['page'] ) && is_numeric( $candidate['page'] ) ) {
-				$current_page = max( 1, absint( $candidate['page'] ) );
-			} elseif ( isset( $candidate['pageNumber'] ) && is_numeric( $candidate['pageNumber'] ) ) {
-				$current_page = max( 1, absint( $candidate['pageNumber'] ) );
-			} elseif ( isset( $candidate['paged'] ) && is_numeric( $candidate['paged'] ) ) {
-				$current_page = max( 1, absint( $candidate['paged'] ) );
-			}
-
 			foreach ( array( 'last_page', 'lastPage', 'total_pages', 'totalPages', 'pages', 'page_count', 'pageCount' ) as $key ) {
 				if ( isset( $candidate[ $key ] ) && is_numeric( $candidate[ $key ] ) ) {
-					$total_pages = max( $total_pages, absint( $candidate[ $key ] ) );
+					$remote_total_pages = max( $remote_total_pages, absint( $candidate[ $key ] ) );
 				}
 			}
 
@@ -495,7 +541,7 @@ class Divi_Apex27_Renderer {
 			}
 
 			if ( $total_pages < 2 && $total_items > 0 ) {
-				$total_pages = max( $total_pages, (int) ceil( $total_items / max( 1, $page_size ) ) );
+				$total_pages = max( $total_pages, (int) ceil( $total_items / $display_page_size ) );
 			}
 
 			$has_next = false;
@@ -520,51 +566,32 @@ class Divi_Apex27_Renderer {
 			}
 		}
 
-		// Prefer explicit requested page when API metadata is stale or always reports page 1.
-		if ( $requested_page > 1 && $current_page < $requested_page ) {
-			$current_page = $requested_page;
+		$chunk_pages = 0;
+		if ( $raw_count > 0 ) {
+			$chunk_pages = (int) ceil( $raw_count / $display_page_size );
 		}
 
-		if ( $current_page > 1 && $total_pages < $current_page ) {
-			// When API omits totals, keep pagination visible on deeper pages.
+		$known_chunk_end = max( $current_page, ( ( $remote_page - 1 ) * $pagination_group_size ) + $chunk_pages );
+
+		if ( $remote_total_pages > 0 ) {
+			$total_pages = max( $total_pages, $remote_total_pages * $pagination_group_size );
+		}
+
+		$total_pages = max( $total_pages, $known_chunk_end );
+
+		if ( $current_page >= $known_chunk_end && $raw_count >= $remote_page_size ) {
+			// Full remote chunk on the chunk end usually means there may be another chunk.
+			$total_pages = max( $total_pages, $known_chunk_end + 1 );
+		}
+
+		if ( $total_pages < $current_page ) {
 			$total_pages = $current_page;
-		}
-
-		if ( $total_pages < 2 && $count >= $page_size ) {
-			// Fallback: if current page is full, assume a possible next page.
-			$total_pages = $current_page + 1;
 		}
 
 		return array(
 			'current_page' => $current_page,
 			'total_pages'  => $total_pages,
 		);
-	}
-
-	/**
-	 * Extract internal fetch metadata injected by API adapter.
-	 *
-	 * @param mixed $result API result.
-	 *
-	 * @return array
-	 */
-	private static function extract_fetch_meta( $result ) {
-		if ( is_object( $result ) && isset( $result->_divi_apex27_fetch ) ) {
-			$meta = $result->_divi_apex27_fetch;
-			if ( is_object( $meta ) ) {
-				$meta = get_object_vars( $meta );
-			}
-
-			if ( is_array( $meta ) ) {
-				return $meta;
-			}
-		}
-
-		if ( is_array( $result ) && isset( $result['_divi_apex27_fetch'] ) && is_array( $result['_divi_apex27_fetch'] ) ) {
-			return $result['_divi_apex27_fetch'];
-		}
-
-		return array();
 	}
 
 	/**
@@ -619,13 +646,12 @@ class Divi_Apex27_Renderer {
 	 */
 	private static function build_page_url( $page, $page_size = 10 ) {
 		$page      = max( 1, absint( $page ) );
-		$page_size = max( 25, absint( $page_size ) );
 		return add_query_arg(
 			array(
-				'apex27_page' => $page,
-				'pageSize'    => $page_size,
+				'pageApex'    => $page,
 				'page'        => false,
-				'paged'       => false,
+				'pageSize'    => false,
+				'apex27_page' => false,
 			)
 		);
 	}
@@ -636,9 +662,33 @@ class Divi_Apex27_Renderer {
 	 * @return int
 	 */
 	private static function requested_page_from_url() {
-		foreach ( array( 'apex27_page', 'paged', 'page' ) as $key ) {
+		foreach ( array( 'pageApex', 'page', 'paged', 'apex27_page' ) as $key ) {
 			if ( isset( $_GET[ $key ] ) && ! is_array( $_GET[ $key ] ) ) {
 				return max( 1, absint( wp_unslash( $_GET[ $key ] ) ) );
+			}
+		}
+
+		if ( function_exists( 'get_query_var' ) ) {
+			foreach ( array( 'pageApex', 'page', 'paged' ) as $key ) {
+				$value = get_query_var( $key );
+				if ( is_numeric( $value ) && (int) $value > 0 ) {
+					return max( 1, absint( $value ) );
+				}
+			}
+		}
+
+		if ( isset( $_SERVER['REQUEST_URI'] ) && is_string( $_SERVER['REQUEST_URI'] ) ) {
+			$query_string = parse_url( wp_unslash( $_SERVER['REQUEST_URI'] ), PHP_URL_QUERY );
+
+			if ( is_string( $query_string ) && '' !== $query_string ) {
+				$params = array();
+				parse_str( $query_string, $params );
+
+				foreach ( array( 'pageApex', 'page', 'paged', 'apex27_page' ) as $key ) {
+					if ( isset( $params[ $key ] ) && ! is_array( $params[ $key ] ) ) {
+						return max( 1, absint( $params[ $key ] ) );
+					}
+				}
 			}
 		}
 
@@ -658,15 +708,27 @@ class Divi_Apex27_Renderer {
 				return $result;
 			}
 
-			foreach ( array( 'listings', 'properties', 'valuations', 'results', 'items', 'data' ) as $key ) {
+			if ( self::looks_like_property_item( $result ) ) {
+				return array( (object) $result );
+			}
+
+			foreach ( array( 'listings', 'properties', 'valuations', 'results', 'items', 'data', 'valuation', 'property', 'listing' ) as $key ) {
 				if ( isset( $result[ $key ] ) && is_array( $result[ $key ] ) ) {
 					return $result[ $key ];
+				}
+
+				if ( isset( $result[ $key ] ) && is_object( $result[ $key ] ) && self::looks_like_property_item( $result[ $key ] ) ) {
+					return array( $result[ $key ] );
 				}
 			}
 		}
 
 		if ( is_object( $result ) ) {
-			foreach ( array( 'listings', 'properties', 'valuations', 'results', 'items', 'data' ) as $key ) {
+			if ( self::looks_like_property_item( $result ) ) {
+				return array( $result );
+			}
+
+			foreach ( array( 'listings', 'properties', 'valuations', 'results', 'items', 'data', 'valuation', 'property', 'listing' ) as $key ) {
 				if ( isset( $result->{$key} ) && is_array( $result->{$key} ) ) {
 					return $result->{$key};
 				}
@@ -675,6 +737,10 @@ class Divi_Apex27_Renderer {
 					$nested_items = self::extract_items( $result->{$key} );
 					if ( ! empty( $nested_items ) ) {
 						return $nested_items;
+					}
+
+					if ( self::looks_like_property_item( $result->{$key} ) ) {
+						return array( $result->{$key} );
 					}
 				}
 			}
@@ -854,7 +920,7 @@ class Divi_Apex27_Renderer {
 
 		$base = get_object_vars( $property );
 
-		foreach ( array( 'property', 'listing', 'item', 'result', 'data', 'details' ) as $nested_key ) {
+		foreach ( array( 'property', 'listing', 'valuation', 'item', 'result', 'data', 'details', 'propertyData', 'listingData', 'valuationData' ) as $nested_key ) {
 			if ( empty( $property->{$nested_key} ) ) {
 				continue;
 			}
@@ -873,6 +939,45 @@ class Divi_Apex27_Renderer {
 		}
 
 		return (object) $base;
+	}
+
+	/**
+	 * Determine if a payload appears to be a property/valuation item.
+	 *
+	 * @param mixed $value Candidate payload.
+	 *
+	 * @return bool
+	 */
+	private static function looks_like_property_item( $value ) {
+		if ( is_object( $value ) ) {
+			$value = get_object_vars( $value );
+		}
+
+		if ( ! is_array( $value ) ) {
+			return false;
+		}
+
+		$keys = array_keys( $value );
+
+		return (bool) array_intersect(
+			$keys,
+			array(
+				'id',
+				'listingId',
+				'propertyId',
+				'displayAddress',
+				'address',
+				'displayPrice',
+				'price',
+				'valuationPrice',
+				'valuationAmount',
+				'thumbnailUrl',
+				'imageUrl',
+				'images',
+				'photos',
+				'media'
+			)
+		);
 	}
 
 	/**
@@ -1067,7 +1172,7 @@ class Divi_Apex27_Renderer {
 			return (string) $direct_url;
 		}
 
-		$id = self::first_property_value( $property, array( 'id', 'listingId', 'listing_id', 'propertyId', 'property_id' ), '' );
+		$id = self::first_property_value( $property, array( 'listingId', 'listing_id', 'propertyId', 'property_id', 'id' ), '' );
 
 		$route = self::first_property_value( $property, array( 'transactionTypeRoute', 'transaction_type_route', 'route' ), '' );
 
@@ -1123,5 +1228,199 @@ class Divi_Apex27_Renderer {
 	 */
 	private static function render_notice( $message ) {
 		return sprintf( '<div class="divi-apex27-notice">%s</div>', esc_html( $message ) );
+	}
+
+	/**
+	 * Enrich valuation payloads with listing fields so card output matches listing cards.
+	 *
+	 * @param mixed            $result Current API result.
+	 * @param array            $query  Effective query.
+	 * @param Divi_Apex27_API  $api    API client.
+	 *
+	 * @return mixed
+	 */
+	private static function maybe_enrich_valuations_with_listings( $result, array $query, $api ) {
+		if ( 'valuations' !== ( isset( $query['listing_type'] ) ? (string) $query['listing_type'] : 'listings' ) ) {
+			return $result;
+		}
+
+		$valuation_items = self::extract_items( $result );
+		if ( empty( $valuation_items ) ) {
+			return $result;
+		}
+
+		$indexed_listings = array();
+
+		foreach ( $valuation_items as $item ) {
+			$valuation_item = self::normalize_property_for_card( is_object( $item ) ? $item : (object) $item );
+			$listing_id     = self::first_property_value( $valuation_item, array( 'listingId', 'listing_id', 'propertyId', 'property_id' ), '' );
+			$listing_id     = absint( $listing_id );
+
+			if ( $listing_id < 1 || isset( $indexed_listings[ 'id:' . $listing_id ] ) ) {
+				continue;
+			}
+
+			$listing_result = $api->get_listing_by_id( $listing_id );
+			if ( is_wp_error( $listing_result ) ) {
+				continue;
+			}
+
+			$listing_items = self::extract_items( $listing_result );
+			if ( empty( $listing_items ) ) {
+				$listing_items = array( $listing_result );
+			}
+
+			$listing_item = reset( $listing_items );
+			if ( ! is_object( $listing_item ) && ! is_array( $listing_item ) ) {
+				continue;
+			}
+
+			$normalized = self::normalize_property_for_card( is_object( $listing_item ) ? $listing_item : (object) $listing_item );
+			foreach ( self::property_match_keys( $normalized ) as $match_key ) {
+				if ( '' !== $match_key ) {
+					$indexed_listings[ $match_key ] = $normalized;
+				}
+			}
+		}
+
+		if ( empty( $indexed_listings ) ) {
+			$listing_query = $query;
+			$listing_query['listing_type'] = 'listings';
+			unset( $listing_query['valuation_type'] );
+
+			$listing_result = $api->get_listings( $listing_query );
+			if ( ! is_wp_error( $listing_result ) ) {
+				$listing_items = self::extract_items( $listing_result );
+				foreach ( $listing_items as $item ) {
+					$normalized = self::normalize_property_for_card( is_object( $item ) ? $item : (object) $item );
+					foreach ( self::property_match_keys( $normalized ) as $match_key ) {
+						if ( '' !== $match_key ) {
+							$indexed_listings[ $match_key ] = $normalized;
+						}
+					}
+				}
+			}
+		}
+
+		if ( empty( $indexed_listings ) ) {
+			return $result;
+		}
+
+		$enriched_items = array();
+		foreach ( $valuation_items as $item ) {
+			$valuation_item = self::normalize_property_for_card( is_object( $item ) ? $item : (object) $item );
+			$enriched_item  = $valuation_item;
+
+			foreach ( self::property_match_keys( $valuation_item ) as $match_key ) {
+				if ( '' !== $match_key && isset( $indexed_listings[ $match_key ] ) ) {
+					$enriched_item = self::fill_missing_fields_from_item( $valuation_item, $indexed_listings[ $match_key ] );
+					break;
+				}
+			}
+
+			$enriched_items[] = $enriched_item;
+		}
+
+		return self::replace_items_in_result( $result, $enriched_items );
+	}
+
+	/**
+	 * Build stable match keys used for valuation/listing merging.
+	 *
+	 * @param object $property Normalized property object.
+	 *
+	 * @return array
+	 */
+	private static function property_match_keys( $property ) {
+		$keys = array();
+
+		$listing_id = self::first_property_value( $property, array( 'listingId', 'listing_id', 'propertyId', 'property_id' ), '' );
+		if ( '' !== trim( $listing_id ) ) {
+			$keys[] = 'id:' . trim( (string) $listing_id );
+		}
+
+		$id = self::first_property_value( $property, array( 'id' ), '' );
+		if ( '' !== trim( $id ) ) {
+			$id_key = 'id:' . trim( (string) $id );
+			if ( ! in_array( $id_key, $keys, true ) ) {
+				$keys[] = $id_key;
+			}
+		}
+
+		$reference = self::first_property_value( $property, array( 'reference', 'ref', 'listingReference', 'listing_reference', 'propertyReference', 'property_reference' ), '' );
+		if ( '' !== trim( $reference ) ) {
+			$keys[] = 'ref:' . strtolower( trim( (string) $reference ) );
+		}
+
+		$address = self::first_property_value( $property, array( 'displayAddress', 'display_address', 'address', 'fullAddress', 'full_address', 'title', 'name' ), '' );
+		if ( '' !== trim( $address ) ) {
+			$keys[] = 'addr:' . strtolower( trim( (string) $address ) );
+		}
+
+		return $keys;
+	}
+
+	/**
+	 * Fill empty valuation fields using the corresponding listing item.
+	 *
+	 * @param object $target Valuation item.
+	 * @param object $source Listing item.
+	 *
+	 * @return object
+	 */
+	private static function fill_missing_fields_from_item( $target, $source ) {
+		$target_vars = get_object_vars( is_object( $target ) ? $target : (object) array() );
+		$source_vars = get_object_vars( is_object( $source ) ? $source : (object) array() );
+
+		foreach ( $source_vars as $key => $value ) {
+			$has_target_value = array_key_exists( $key, $target_vars ) && ! self::is_empty_scalar_value( $target_vars[ $key ] );
+			if ( ! $has_target_value ) {
+				$target_vars[ $key ] = $value;
+			}
+		}
+
+		return (object) $target_vars;
+	}
+
+	/**
+	 * Replace extracted items in common response shapes.
+	 *
+	 * @param mixed $result API result.
+	 * @param array $items  Enriched items.
+	 *
+	 * @return mixed
+	 */
+	private static function replace_items_in_result( $result, array $items ) {
+		if ( is_array( $result ) ) {
+			if ( isset( $result[0] ) ) {
+				return $items;
+			}
+
+			foreach ( array( 'valuations', 'listings', 'properties', 'results', 'items', 'data' ) as $key ) {
+				if ( array_key_exists( $key, $result ) ) {
+					$result[ $key ] = $items;
+					return $result;
+				}
+			}
+
+			$result['items'] = $items;
+
+			return $result;
+		}
+
+		if ( is_object( $result ) ) {
+			foreach ( array( 'valuations', 'listings', 'properties', 'results', 'items', 'data' ) as $key ) {
+				if ( isset( $result->{$key} ) ) {
+					$result->{$key} = $items;
+					return $result;
+				}
+			}
+
+			$result->items = $items;
+
+			return $result;
+		}
+
+		return $items;
 	}
 }

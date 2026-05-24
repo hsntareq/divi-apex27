@@ -66,6 +66,11 @@
                             "value": "rent"
                         }
                     },
+                    "row_count": {
+                        "desktop": {
+                            "value": "2"
+                        }
+                    },
                     "column_count": {
                         "desktop": {
                             "value": "4"
@@ -89,11 +94,6 @@
                     "valuation_type": {
                         "desktop": {
                             "value": ""
-                        }
-                    },
-                    "posts_per_page": {
-                        "desktop": {
-                            "value": "27"
                         }
                     },
                     "sort": {
@@ -189,6 +189,42 @@
                             "priority": 18,
                             "render": true,
                             "label": "Columns",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": {
+                                            "label": "1"
+                                        },
+                                        "2": {
+                                            "label": "2"
+                                        },
+                                        "3": {
+                                            "label": "3"
+                                        },
+                                        "4": {
+                                            "label": "4"
+                                        },
+                                        "5": {
+                                            "label": "5"
+                                        },
+                                        "6": {
+                                            "label": "6"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "row_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.row_count",
+                            "priority": 19,
+                            "render": true,
+                            "label": "Rows",
                             "component": {
                                 "name": "divi/select",
                                 "type": "field",
@@ -1015,20 +1051,6 @@
                                         }
                                     }
                                 }
-                            }
-                        }
-                    },
-                    "posts_per_page": {
-                        "groupType": "group-item",
-                        "item": {
-                            "groupSlug": "searchFields",
-                            "attrName": "apex27.content.posts_per_page",
-                            "priority": 88,
-                            "render": true,
-                            "label": "Properties per page",
-                            "component": {
-                                "name": "divi/text",
-                                "type": "field"
                             }
                         }
                     },

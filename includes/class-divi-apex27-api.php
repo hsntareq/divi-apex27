@@ -46,6 +46,91 @@ class Divi_Apex27_API {
 	}
 
 	/**
+	 * Fetch one listing by ID from /listings/{id}.
+	 *
+	 * @param int $listing_id Listing ID.
+	 *
+	 * @return object|array|\WP_Error
+	 */
+	public function get_listing_by_id( $listing_id ) {
+		if ( ! $this->is_configured() ) {
+			return new WP_Error( 'divi_apex27_not_configured', __( 'Apex27 Website URL and API Key are not configured.', 'divi-apex27' ) );
+		}
+
+		$listing_id = absint( $listing_id );
+
+		if ( $listing_id < 1 ) {
+			return new WP_Error( 'divi_apex27_invalid_listing_id', __( 'Invalid listing ID supplied for listing lookup.', 'divi-apex27' ) );
+		}
+
+		$params = array(
+			'includeImages' => 1,
+		);
+
+		$api_key   = $this->get_api_key();
+		$api_token = $this->get_api_token();
+		$headers   = array(
+			'Accept' => 'application/json',
+		);
+
+		if ( '' !== trim( $api_key ) ) {
+			$params['api_key']    = $api_key;
+			$headers['x-api-key'] = $api_key;
+		}
+
+		if ( '' !== trim( $api_token ) ) {
+			$params['apiToken']         = $api_token;
+			$params['token']            = $api_token;
+			$headers['x-api-token']     = $api_token;
+			$headers['Authorization']   = 'Bearer ' . $api_token;
+		}
+
+		$url       = trailingslashit( $this->get_website_url() ) . 'listings/' . $listing_id;
+		$request   = add_query_arg( $params, $url );
+		$cache_key = 'divi_apex27_' . md5( $request );
+		$cached    = get_transient( $cache_key );
+
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$response = wp_remote_get(
+			$request,
+			array(
+				'timeout' => 20,
+				'headers' => $headers,
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$status_code = wp_remote_retrieve_response_code( $response );
+		$body        = wp_remote_retrieve_body( $response );
+		$data        = json_decode( $body );
+
+		if ( $status_code < 200 || $status_code >= 300 ) {
+			return new WP_Error(
+				'divi_apex27_request_failed',
+				sprintf(
+					/* translators: %d: HTTP response code. */
+					__( 'Apex27 request failed with HTTP status %d.', 'divi-apex27' ),
+					$status_code
+				)
+			);
+		}
+
+		if ( null === $data && JSON_ERROR_NONE !== json_last_error() ) {
+			return new WP_Error( 'divi_apex27_invalid_json', __( 'Apex27 returned an invalid JSON response.', 'divi-apex27' ) );
+		}
+
+		set_transient( $cache_key, $data, 10 * MINUTE_IN_SECONDS );
+
+		return $data;
+	}
+
+	/**
 	 * Fetch listings using /listings or /valuations endpoint URL shape.
 	 *
 	 * @param array $query Module query values.
@@ -60,11 +145,6 @@ class Divi_Apex27_API {
 		$transaction_type = $this->resolve_transaction_type( $query );
 		$page             = isset( $query['page'] ) ? absint( $query['page'] ) : 1;
 		$page_size        = isset( $query['posts_per_page'] ) ? absint( $query['posts_per_page'] ) : 27;
-		$requested_page   = $page;
-		$requested_size   = $page_size;
-		$effective_page   = $page;
-		$effective_size   = $page_size;
-		$is_aggregated    = false;
 
 		if ( $page < 1 ) {
 			$page = 1;
@@ -74,16 +154,10 @@ class Divi_Apex27_API {
 			$page_size = 27;
 		}
 
-		if ( $requested_size < 25 ) {
-			$effective_page = 1;
-			$effective_size = max( 25, $requested_page * $requested_size );
-			$is_aggregated  = true;
-		}
-
 		$params = array(
 			'transactionType' => $transaction_type,
-			'page'            => $effective_page,
-			'pageSize'        => $effective_size,
+			'page'            => $page,
+			'pageSize'        => $page_size,
 			'includeImages'   => 1,
 		);
 
@@ -147,20 +221,6 @@ class Divi_Apex27_API {
 
 		if ( null === $data && JSON_ERROR_NONE !== json_last_error() ) {
 			return new WP_Error( 'divi_apex27_invalid_json', __( 'Apex27 returned an invalid JSON response.', 'divi-apex27' ) );
-		}
-
-		$fetch_meta = array(
-			'requestedPage'     => $requested_page,
-			'requestedPageSize' => $requested_size,
-			'effectivePage'     => $effective_page,
-			'effectivePageSize' => $effective_size,
-			'aggregated'        => $is_aggregated,
-		);
-
-		if ( is_object( $data ) ) {
-			$data->_divi_apex27_fetch = $fetch_meta;
-		} elseif ( is_array( $data ) ) {
-			$data['_divi_apex27_fetch'] = $fetch_meta;
 		}
 
 		set_transient( $cache_key, $data, 10 * MINUTE_IN_SECONDS );

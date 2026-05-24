@@ -74,11 +74,19 @@ class Divi_Apex27_Module extends ET_Builder_Module {
 				),
 				'default'         => '4',
 			),
-			'posts_per_page' => array(
-				'label'           => esc_html__( 'Properties per page', 'divi-apex27' ),
-				'type'            => 'text',
+			'row_count' => array(
+				'label'           => esc_html__( 'Rows', 'divi-apex27' ),
+				'type'            => 'select',
 				'option_category' => 'basic_option',
-				'default'         => '27',
+				'options'         => array(
+					'1' => esc_html__( '1', 'divi-apex27' ),
+					'2' => esc_html__( '2', 'divi-apex27' ),
+					'3' => esc_html__( '3', 'divi-apex27' ),
+					'4' => esc_html__( '4', 'divi-apex27' ),
+					'5' => esc_html__( '5', 'divi-apex27' ),
+					'6' => esc_html__( '6', 'divi-apex27' ),
+				),
+				'default'         => '2',
 			),
 		);
 	}
