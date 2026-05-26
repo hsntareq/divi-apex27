@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/property-for-sale",
-    "version": "1.0.2",
+        "version": "1.0.3",
     "apiVersion": 2,
     "title": "Apex27 Available For Sale",
     "titles": "Apex27 Available For Sale",
@@ -53,7 +53,7 @@
                 "content": {
                     "title": {
                         "desktop": {
-                            "value": "Available For Sale"
+                                "value": ""
                         }
                     },
                     "listing_type": {

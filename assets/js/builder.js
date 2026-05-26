@@ -76,10 +76,6 @@
 				}
 			});
 
-			if (content.title?.desktop) {
-				content.title.desktop.value = 'Available For Sale';
-			}
-
 			if (content.type?.desktop) {
 				content.type.desktop.value = 'sale';
 			}
