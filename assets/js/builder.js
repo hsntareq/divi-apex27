@@ -322,6 +322,11 @@
 				metadata: window.diviApex27PropertySearchFormMetadata || null,
 				loadingText: 'Loading Apex27 property search form...',
 				createRenderer: createSearchFormPreviewRenderer
+			},
+			{
+				flag: 'diviApex27PropertyForSaleRegistered',
+				metadata: window.diviApex27PropertyForSaleMetadata || null,
+				loadingText: 'Loading Apex27 available for sale properties...'
 			}
 		];
 

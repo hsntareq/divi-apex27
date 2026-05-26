@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.57
+ * Version: 1.0.58
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.57' );
+define( 'DIVI_APEX27_VERSION', '1.0.58' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -238,6 +238,15 @@ function divi_apex27_enqueue_builder_assets() {
 		);
 	}
 
+	$for_sale_metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/property-for-sale/module.json' ), true );
+	if ( is_array( $for_sale_metadata ) ) {
+		wp_add_inline_script(
+			'divi-apex27-builder',
+			'window.diviApex27PropertyForSaleMetadata = ' . wp_json_encode( $for_sale_metadata ) . ';',
+			'before'
+		);
+	}
+
 	wp_enqueue_script( 'divi-apex27-builder' );
 	wp_enqueue_style(
 		'divi-apex27-builder',
@@ -277,6 +286,12 @@ function divi_apex27_register_modules() {
 			'path'   => DIVI_APEX27_PATH . 'modules/property-search-form',
 			'config' => array(
 				'render_callback' => 'divi_apex27_search_form_render_callback',
+			),
+		),
+		array(
+			'path'   => DIVI_APEX27_PATH . 'modules/property-for-sale',
+			'config' => array(
+				'render_callback' => 'divi_apex27_for_sale_render_callback',
 			),
 		),
 	);
@@ -367,6 +382,29 @@ function divi_apex27_search_form_render_callback( $attrs, $content, $block, $ele
 			esc_html( $message )
 		);
 	}
+}
+
+/**
+ * Divi 5 available-for-sale render callback.
+ *
+ * @param array     $attrs    Module attributes.
+ * @param string    $content  Module content.
+ * @param \WP_Block $block   Block object.
+ * @param object    $elements Divi elements object.
+ *
+ * @return string
+ */
+function divi_apex27_for_sale_render_callback( $attrs, $content, $block, $elements ) {
+	unset( $block, $elements );
+
+	$props = Divi_Apex27_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
+
+	// Force backend query to available-for-sale listings only.
+	$props['listing_type'] = 'listings';
+	$props['type']         = 'sale';
+	$props['include_sstc'] = '0';
+
+	return Divi_Apex27_Renderer::render( $props ) . $content;
 }
 
 /**
