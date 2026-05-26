@@ -210,11 +210,12 @@ class Divi_Apex27_Search_Form_Renderer {
 	 */
 	private static function render_select_field( $name, $label, array $options, $selected, $placeholder = '' ) {
 		$output  = '<label class="divi-apex27-search-field">';
-		$output .= sprintf( '<span>%s</span>', esc_html( $label ) );
 		$output .= sprintf( '<select name="%s">', esc_attr( $name ) );
 
 		if ( '' !== $placeholder ) {
 			$output .= sprintf( '<option value="">%s</option>', esc_html( $placeholder ) );
+		} else {
+			$output .= sprintf( '<option value="">%s</option>', esc_html( $label ) );
 		}
 
 		foreach ( $options as $value => $display ) {

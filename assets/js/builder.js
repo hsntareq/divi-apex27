@@ -41,11 +41,10 @@
 		const createField = (label, placeholder, key) => React.createElement(
 			'label',
 			{ className: 'divi-apex27-search-field', key },
-			React.createElement('span', null, label),
 			React.createElement(
 				'select',
 				{ disabled: true, defaultValue: '' },
-				React.createElement('option', { value: '' }, placeholder)
+				React.createElement('option', { value: '' }, placeholder || label)
 			)
 		);
 
