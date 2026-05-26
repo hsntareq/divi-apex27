@@ -54,6 +54,43 @@
 		return window.et_fb_options?.ajaxurl || window.ajaxurl || '/wp-admin/admin-ajax.php';
 	}
 
+	function createForSaleMetadataFallback() {
+		const source = window.diviApex27PropertyFilterMetadata;
+		if (!source || typeof source !== 'object') {
+			return null;
+		}
+
+		const metadata = JSON.parse(JSON.stringify(source));
+		metadata.name = 'divi-apex27/property-for-sale';
+		metadata.title = 'Apex27 Available For Sale';
+		metadata.titles = 'Apex27 Available For Sale';
+		metadata.moduleClassName = 'divi-apex27-property-for-sale';
+		metadata.moduleOrderClassName = 'divi_apex27_property_for_sale';
+
+		const content = metadata?.attributes?.apex27?.default?.content;
+		if (content) {
+			if (content.title?.desktop) {
+				content.title.desktop.value = 'Available For Sale';
+			}
+
+			if (content.type?.desktop) {
+				content.type.desktop.value = 'sale';
+			}
+
+			if (content.listing_type?.desktop) {
+				content.listing_type.desktop.value = 'listings';
+			}
+
+			content.include_sstc = {
+				desktop: {
+					value: '0'
+				}
+			};
+		}
+
+		return metadata;
+	}
+
 	function createPropertyFilterPreviewRenderer(React) {
 		class PropertyFilterPreview extends React.Component {
 			constructor(props) {
@@ -310,6 +347,8 @@
 	}
 
 	function registerModules() {
+		const forSaleMetadata = window.diviApex27PropertyForSaleMetadata || createForSaleMetadataFallback();
+
 		const definitions = [
 			{
 				flag: 'diviApex27PropertyFilterRegistered',
@@ -325,7 +364,7 @@
 			},
 			{
 				flag: 'diviApex27PropertyForSaleRegistered',
-				metadata: window.diviApex27PropertyForSaleMetadata || null,
+				metadata: forSaleMetadata,
 				loadingText: 'Loading Apex27 available for sale properties...'
 			}
 		];
