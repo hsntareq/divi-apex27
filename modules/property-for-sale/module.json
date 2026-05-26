@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/property-for-sale",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "apiVersion": 2,
     "title": "Apex27 Available For Sale",
     "titles": "Apex27 Available For Sale",
@@ -76,6 +76,11 @@
                             "value": "2"
                         }
                     },
+                    "show_pagination": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
                     "column_count": {
                         "desktop": {
                             "value": "4"
@@ -149,6 +154,20 @@
                                         "6": { "label": "6" }
                                     }
                                 }
+                            }
+                        }
+                    },
+                    "show_pagination": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "saleFields",
+                            "attrName": "apex27.content.show_pagination",
+                            "priority": 14,
+                            "render": true,
+                            "label": "Show Pagination",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
                             }
                         }
                     },

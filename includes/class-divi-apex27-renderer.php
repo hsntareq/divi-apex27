@@ -23,6 +23,7 @@ class Divi_Apex27_Renderer {
 		return array(
 			'title'         => '',
 			'locked_query'  => '',
+			'show_pagination' => 'on',
 			'listing_type'  => 'listings',
 			'type'          => 'rent',
 			'row_count'     => '2',
@@ -430,7 +431,9 @@ class Divi_Apex27_Renderer {
 			$output .= self::render_card( is_object( $item ) ? $item : (object) $item );
 		}
 
-		$output .= self::render_pagination( $result, $raw_count, $display_page_size, $current_page, $pagination_group_size, $remote_page, $remote_page_size );
+		if ( 'off' !== (string) ( $props['show_pagination'] ?? 'on' ) ) {
+			$output .= self::render_pagination( $result, $raw_count, $display_page_size, $current_page, $pagination_group_size, $remote_page, $remote_page_size );
+		}
 
 		return $output . '</div>';
 	}

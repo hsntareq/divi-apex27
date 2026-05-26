@@ -69,7 +69,7 @@
 
 		const content = metadata?.attributes?.apex27?.default?.content;
 		if (content) {
-			const allowedDefaultKeys = new Set(['title', 'row_count', 'column_count', 'empty_text', 'listing_type', 'type', 'include_sstc']);
+			const allowedDefaultKeys = new Set(['title', 'row_count', 'column_count', 'show_pagination', 'empty_text', 'listing_type', 'type', 'include_sstc']);
 			Object.keys(content).forEach((key) => {
 				if (!allowedDefaultKeys.has(key)) {
 					delete content[key];
@@ -98,7 +98,7 @@
 		const moduleContentSettings = metadata?.attributes?.apex27?.settings?.content;
 		if (moduleContentSettings) {
 			Object.keys(moduleContentSettings).forEach((key) => {
-				if (!['title', 'column_count', 'row_count', 'empty_text'].includes(key)) {
+				if (!['title', 'column_count', 'row_count', 'show_pagination', 'empty_text'].includes(key)) {
 					delete moduleContentSettings[key];
 				}
 			});
