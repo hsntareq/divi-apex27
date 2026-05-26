@@ -883,9 +883,9 @@ class Divi_Apex27_Renderer {
 
 			if ( $has_features ) {
 				$output .= '<p class="divi-apex27-card-meta">';
-				$output .= '' !== $bedrooms ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bedrooms ) ) : '';
-				$output .= '' !== $bathrooms ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bathrooms ) ) : '';
-				$output .= '' !== $receptions ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $receptions ) ) : '';
+				$output .= '' !== $bedrooms ? sprintf( '<span class="divi-apex27-card-feature divi-apex27-card-feature--room"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bedrooms ) ) : '';
+				$output .= '' !== $bathrooms ? sprintf( '<span class="divi-apex27-card-feature divi-apex27-card-feature--bathroom"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bathrooms ) ) : '';
+				$output .= '' !== $receptions ? sprintf( '<span class="divi-apex27-card-feature divi-apex27-card-feature--kitchen"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $receptions ) ) : '';
 				$output .= '</p>';
 			}
 

@@ -161,23 +161,76 @@
 
 .divi-apex27-card-feature-icon {
 	display: inline-block;
-	width: 11px;
-	height: 7px;
+	width: 13px;
+	height: 9px;
 	border: 1.5px solid #768292;
 	border-radius: 1px;
 	position: relative;
 	flex: 0 0 auto;
 }
 
-.divi-apex27-card-feature-icon::before {
+.divi-apex27-card-feature-icon::before,
+.divi-apex27-card-feature-icon::after {
 	content: '';
 	position: absolute;
+}
+
+.divi-apex27-card-feature--room .divi-apex27-card-feature-icon::before {
 	left: 2px;
 	right: 2px;
 	bottom: -3px;
 	height: 2px;
 	background: #768292;
 	border-radius: 1px;
+}
+
+.divi-apex27-card-feature--bathroom .divi-apex27-card-feature-icon {
+	border-radius: 6px 6px 2px 2px;
+	height: 7px;
+	margin-top: 2px;
+}
+
+.divi-apex27-card-feature--bathroom .divi-apex27-card-feature-icon::before {
+	width: 4px;
+	height: 2px;
+	left: 1px;
+	top: -3px;
+	background: #768292;
+	border-radius: 2px;
+}
+
+.divi-apex27-card-feature--bathroom .divi-apex27-card-feature-icon::after {
+	width: 2px;
+	height: 2px;
+	right: 1px;
+	top: -3px;
+	border: 1.5px solid #768292;
+	border-bottom: 0;
+	border-radius: 3px 3px 0 0;
+}
+
+.divi-apex27-card-feature--kitchen .divi-apex27-card-feature-icon {
+	border-radius: 2px;
+	margin-top: 1px;
+}
+
+.divi-apex27-card-feature--kitchen .divi-apex27-card-feature-icon::before {
+	left: -1px;
+	right: -1px;
+	top: -3px;
+	height: 2px;
+	background: #768292;
+	border-radius: 2px 2px 0 0;
+}
+
+.divi-apex27-card-feature--kitchen .divi-apex27-card-feature-icon::after {
+	width: 2px;
+	height: 2px;
+	left: 50%;
+	bottom: 1px;
+	transform: translateX(-50%);
+	background: #768292;
+	border-radius: 50%;
 }
 
 .divi-apex27-card-summary {
