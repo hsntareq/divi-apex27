@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.66
+ * Version: 1.0.67
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.66' );
+define( 'DIVI_APEX27_VERSION', '1.0.67' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -396,8 +396,6 @@ function divi_apex27_search_form_render_callback( $attrs, $content, $block, $ele
  * @return string
  */
 function divi_apex27_for_sale_render_callback( $attrs, $content, $block, $elements ) {
-	unset( $block, $elements );
-
 	$props = Divi_Apex27_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
 
 	// Force backend query to available-for-sale listings only.
@@ -406,7 +404,35 @@ function divi_apex27_for_sale_render_callback( $attrs, $content, $block, $elemen
 	$props['type']         = 'sale';
 	$props['include_sstc'] = '0';
 
-	return Divi_Apex27_Renderer::render( $props ) . $content;
+	$output       = Divi_Apex27_Renderer::render( $props );
+	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
+	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
+
+	if ( class_exists( 'ET\\Builder\\Packages\\Module\\Module' ) ) {
+		$style_components = '';
+		if ( is_object( $elements ) && method_exists( $elements, 'style_components' ) ) {
+			$style_components = $elements->style_components(
+				array(
+					'attrName' => 'module',
+				)
+			);
+		}
+
+		return ET\Builder\Packages\Module\Module::render(
+			array(
+				'attrs'          => $attrs,
+				'elements'       => $elements,
+				'id'             => $parsed_block['id'] ?? '',
+				'name'           => is_object( $block_type ) && isset( $block_type->name ) ? $block_type->name : 'divi-apex27/property-for-sale',
+				'moduleCategory' => is_object( $block_type ) && isset( $block_type->category ) ? $block_type->category : 'module',
+				'orderIndex'     => $parsed_block['orderIndex'] ?? null,
+				'storeInstance'  => $parsed_block['storeInstance'] ?? null,
+				'children'       => $style_components . $output . $content,
+			)
+		);
+	}
+
+	return $output . $content;
 }
 
 /**
