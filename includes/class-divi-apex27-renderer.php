@@ -810,6 +810,7 @@ class Divi_Apex27_Renderer {
 		$property = self::normalize_property_for_card( $property );
 		$title    = self::first_property_value( $property, array( 'displayAddress', 'display_address', 'address', 'fullAddress', 'full_address', 'title', 'header', 'name' ), __( 'Apex27 Property', 'divi-apex27' ) );
 		$price    = self::first_property_value( $property, array( 'displayPrice', 'display_price', 'price', 'valuationPrice', 'valuation_price', 'valuationAmount', 'valuation_amount', 'amount' ), '' );
+		$price    = self::format_price_display( $price );
 		$price_prefix = self::first_property_value( $property, array( 'pricePrefix', 'price_prefix' ), '' );
 		$subtitle = self::first_property_value( $property, array( 'subtitle', 'subTitle' ), '' );
 		$location = self::first_property_value( $property, array( 'displayCity', 'display_city', 'city', 'town', 'area', 'locality', 'localityName', 'locality_name' ), '' );
@@ -947,6 +948,33 @@ class Divi_Apex27_Renderer {
 		}
 
 		return $fallback;
+	}
+
+	/**
+	 * Ensure prices display a currency symbol when the API returns numeric-only values.
+	 *
+	 * @param string $price Raw price value.
+	 *
+	 * @return string
+	 */
+	private static function format_price_display( $price ) {
+		$price = trim( (string) $price );
+
+		if ( '' === $price ) {
+			return '';
+		}
+
+		if ( preg_match( '/[\x{00A3}\x{0024}\x{20AC}\p{Sc}]/u', $price ) ) {
+			return $price;
+		}
+
+		$normalized_numeric = preg_replace( '/[\s,]/', '', $price );
+		if ( '' !== $normalized_numeric && is_numeric( $normalized_numeric ) ) {
+			$decimals = false !== strpos( $normalized_numeric, '.' ) ? 2 : 0;
+			return sprintf( '£%s', number_format_i18n( (float) $normalized_numeric, $decimals ) );
+		}
+
+		return $price;
 	}
 
 	/**
