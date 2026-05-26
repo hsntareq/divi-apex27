@@ -118,7 +118,7 @@
 
 			return React.createElement(
 				'div',
-				{ className: 'divi-apex27-search-form' },
+				{ className: 'divi-apex27-search-form divi-apex27-builder-mode' },
 				title ? React.createElement('h2', { className: 'divi-apex27-search-title' }, title) : null,
 				React.createElement(
 					'form',

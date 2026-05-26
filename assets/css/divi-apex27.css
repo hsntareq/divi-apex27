@@ -170,6 +170,10 @@
 	pointer-events: auto;
 }
 
+.divi-apex27-builder-mode * {
+	pointer-events: none;
+}
+
 .divi-apex27-builder-mode a,
 .divi-apex27-builder-mode button,
 .divi-apex27-builder-mode input,

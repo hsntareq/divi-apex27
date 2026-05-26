@@ -69,6 +69,7 @@ class Divi_Apex27_Search_Form_Renderer {
 	public static function render( array $props ) {
 		$props = wp_parse_args( $props, self::defaults() );
 		$api   = new Divi_Apex27_API();
+		$wrapper_class = 'divi-apex27-search-form' . ( self::is_builder_preview() ? ' divi-apex27-builder-mode' : '' );
 
 		if ( ! $api->is_configured() ) {
 			return sprintf( '<div class="divi-apex27-notice">%s</div>', esc_html__( 'Configure the Website URL and API Key in Settings > Divi Apex27 before using this module.', 'divi-apex27' ) );
@@ -109,7 +110,7 @@ class Divi_Apex27_Search_Form_Renderer {
 		$max_bed_options       = self::bedroom_options( 'max' );
 		$yield_options         = self::gross_yield_options();
 
-		$output  = '<div class="divi-apex27-search-form">';
+		$output  = sprintf( '<div class="%s">', esc_attr( $wrapper_class ) );
 		$output .= sprintf( '<h2 class="divi-apex27-search-title">%s</h2>', esc_html( (string) $props['title'] ) );
 		$output .= sprintf( '<form method="get" action="%s" class="divi-apex27-search-grid">', esc_url( $action_url ) );
 
@@ -173,6 +174,27 @@ class Divi_Apex27_Search_Form_Renderer {
 		$output .= '</form></div>';
 
 		return $output;
+	}
+
+	/**
+	 * Determine whether request is from Divi Visual Builder.
+	 *
+	 * @return bool
+	 */
+	private static function is_builder_preview() {
+		if ( is_admin() ) {
+			return true;
+		}
+
+		if ( isset( $_GET['et_fb'] ) && '1' === sanitize_text_field( wp_unslash( $_GET['et_fb'] ) ) ) {
+			return true;
+		}
+
+		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
