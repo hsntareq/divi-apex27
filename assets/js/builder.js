@@ -30,7 +30,20 @@
 
 	function getServerRenderedModule() {
 		const currentDivi = getDivi();
-		return currentDivi?.module?.ServerRenderedModule || null;
+		const candidates = [
+			currentDivi?.module?.ServerRenderedModule,
+			currentDivi?.moduleLibrary?.ServerRenderedModule,
+			findComponent(currentDivi?.module, 'ServerRenderedModule'),
+			findComponent(currentDivi?.moduleLibrary, 'ServerRenderedModule')
+		];
+
+		for (const candidate of candidates) {
+			if (typeof candidate === 'function') {
+				return candidate;
+			}
+		}
+
+		return null;
 	}
 
 	function getSettingValue(settings, key, fallbackValue) {
