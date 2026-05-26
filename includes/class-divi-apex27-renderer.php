@@ -825,6 +825,8 @@ class Divi_Apex27_Renderer {
 		$gross_yield = self::first_property_value( $property, array( 'grossYield', 'gross_yield' ), '' );
 		$image    = self::extract_property_image_url( $property );
 		$url      = self::property_url( $property );
+		$status_display = self::humanize_status_value( $status );
+		$type_display   = self::humanize_type_value( $property_type );
 
 		if ( '' === $location ) {
 			$location = $subtitle;
@@ -904,8 +906,8 @@ class Divi_Apex27_Renderer {
 		if ( $reference || $status || $property_type ) {
 			$output .= '<p class="divi-apex27-card-aux">';
 			$output .= $reference ? sprintf( '<span><strong>%s:</strong> %s</span>', esc_html__( 'Ref', 'divi-apex27' ), esc_html( $reference ) ) : '';
-			$output .= $status ? sprintf( '<span><strong>%s:</strong> %s</span>', esc_html__( 'Status', 'divi-apex27' ), esc_html( $status ) ) : '';
-			$output .= $property_type ? sprintf( '<span><strong>%s:</strong> %s</span>', esc_html__( 'Type', 'divi-apex27' ), esc_html( $property_type ) ) : '';
+			$output .= $status ? sprintf( '<span><strong>%s:</strong> %s</span>', esc_html__( 'Status', 'divi-apex27' ), esc_html( $status_display ) ) : '';
+			$output .= $property_type ? sprintf( '<span><strong>%s:</strong> %s</span>', esc_html__( 'Type', 'divi-apex27' ), esc_html( $type_display ) ) : '';
 			$output .= '</p>';
 		}
 
@@ -948,6 +950,110 @@ class Divi_Apex27_Renderer {
 		}
 
 		return $fallback;
+	}
+
+	/**
+	 * Convert API status code values into human-readable labels.
+	 *
+	 * @param string $status Raw status value.
+	 *
+	 * @return string
+	 */
+	private static function humanize_status_value( $status ) {
+		$status = trim( (string) $status );
+
+		if ( '' === $status ) {
+			return '';
+		}
+
+		$normalized = strtolower( preg_replace( '/\s+/', '_', str_replace( '-', '_', $status ) ) );
+		$map = array(
+			'for_sale'          => __( 'For Sale', 'divi-apex27' ),
+			'to_let'            => __( 'To Let', 'divi-apex27' ),
+			'under_offer'       => __( 'Under Offer', 'divi-apex27' ),
+			'let_agreed'        => __( 'Let Agreed', 'divi-apex27' ),
+			'sold'              => __( 'Sold', 'divi-apex27' ),
+			'sstc'              => __( 'SSTC', 'divi-apex27' ),
+			'sold_stc'          => __( 'Sold STC', 'divi-apex27' ),
+			'sold_subject_to_contract' => __( 'Sold Subject to Contract', 'divi-apex27' ),
+			'available'         => __( 'Available', 'divi-apex27' ),
+			'unavailable'       => __( 'Unavailable', 'divi-apex27' ),
+			'withdrawn'         => __( 'Withdrawn', 'divi-apex27' ),
+			'off_market'        => __( 'Off Market', 'divi-apex27' ),
+		);
+
+		if ( isset( $map[ $normalized ] ) ) {
+			return $map[ $normalized ];
+		}
+
+		return self::humanize_machine_value( $status );
+	}
+
+	/**
+	 * Convert API type/property_type code values into human-readable labels.
+	 *
+	 * @param string $type Raw type value.
+	 *
+	 * @return string
+	 */
+	private static function humanize_type_value( $type ) {
+		$type = trim( (string) $type );
+
+		if ( '' === $type ) {
+			return '';
+		}
+
+		$normalized = strtolower( preg_replace( '/\s+/', '_', str_replace( '-', '_', $type ) ) );
+		$map = array(
+			'detached_house'      => __( 'Detached House', 'divi-apex27' ),
+			'semi_detached_house' => __( 'Semi-detached House', 'divi-apex27' ),
+			'end_terrace'         => __( 'End Terraced House', 'divi-apex27' ),
+			'link_detached'       => __( 'Link Detached House', 'divi-apex27' ),
+			'new_homes'           => __( 'New Homes', 'divi-apex27' ),
+			'commercial_sale'     => __( 'Commercial Sale', 'divi-apex27' ),
+			'commercial_rent'     => __( 'Commercial Rent', 'divi-apex27' ),
+		);
+
+		if ( isset( $map[ $normalized ] ) ) {
+			return $map[ $normalized ];
+		}
+
+		return self::humanize_machine_value( $type );
+	}
+
+	/**
+	 * Humanize generic snake_case / kebab-case values.
+	 *
+	 * @param string $value Raw value.
+	 *
+	 * @return string
+	 */
+	private static function humanize_machine_value( $value ) {
+		$value = trim( (string) $value );
+
+		if ( '' === $value ) {
+			return '';
+		}
+
+		$tokens = preg_split( '/[\s_-]+/', $value );
+		$tokens = is_array( $tokens ) ? $tokens : array( $value );
+		$labels = array();
+
+		foreach ( $tokens as $token ) {
+			if ( '' === $token ) {
+				continue;
+			}
+
+			$lower = strtolower( $token );
+			if ( in_array( $lower, array( 'sstc', 'stc', 'pcm', 'poa' ), true ) ) {
+				$labels[] = strtoupper( $lower );
+				continue;
+			}
+
+			$labels[] = ucfirst( $lower );
+		}
+
+		return implode( ' ', $labels );
 	}
 
 	/**
