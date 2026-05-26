@@ -812,6 +812,7 @@ class Divi_Apex27_Renderer {
 		$price    = self::first_property_value( $property, array( 'displayPrice', 'display_price', 'price', 'valuationPrice', 'valuation_price', 'valuationAmount', 'valuation_amount', 'amount' ), '' );
 		$price    = self::format_price_display( $price );
 		$price_prefix = self::first_property_value( $property, array( 'pricePrefix', 'price_prefix' ), '' );
+		$price_prefix = self::humanize_price_prefix_value( $price_prefix );
 		$subtitle = self::first_property_value( $property, array( 'subtitle', 'subTitle' ), '' );
 		$location = self::first_property_value( $property, array( 'displayCity', 'display_city', 'city', 'town', 'area', 'locality', 'localityName', 'locality_name' ), '' );
 		$summary  = self::first_property_value( $property, array( 'summary', 'subtitle', 'description', 'shortDescription', 'short_description', 'details' ), '' );
@@ -838,7 +839,7 @@ class Divi_Apex27_Renderer {
 		}
 
 		if ( '' === trim( $badge ) ) {
-			$badge = $status;
+			$badge = $status_display;
 		}
 
 		if ( '' === trim( $badge ) ) {
@@ -1019,6 +1020,41 @@ class Divi_Apex27_Renderer {
 		}
 
 		return self::humanize_machine_value( $type );
+	}
+
+	/**
+	 * Convert API price-prefix values into human-readable labels.
+	 *
+	 * @param string $price_prefix Raw price prefix.
+	 *
+	 * @return string
+	 */
+	private static function humanize_price_prefix_value( $price_prefix ) {
+		$price_prefix = trim( (string) $price_prefix );
+
+		if ( '' === $price_prefix ) {
+			return '';
+		}
+
+		$normalized = strtolower( preg_replace( '/\s+/', '_', str_replace( '-', '_', $price_prefix ) ) );
+		$map = array(
+			'asking_price'    => __( 'Asking Price', 'divi-apex27' ),
+			'guide_price'     => __( 'Guide Price', 'divi-apex27' ),
+			'offers_over'     => __( 'Offers Over', 'divi-apex27' ),
+			'offers_in_excess_of' => __( 'Offers In Excess Of', 'divi-apex27' ),
+			'fixed_price'     => __( 'Fixed Price', 'divi-apex27' ),
+			'price_on_application' => __( 'Price on Application', 'divi-apex27' ),
+			'poa'             => __( 'POA', 'divi-apex27' ),
+			'pcm'             => __( 'PCM', 'divi-apex27' ),
+			'pw'              => __( 'PW', 'divi-apex27' ),
+			'pa'              => __( 'PA', 'divi-apex27' ),
+		);
+
+		if ( isset( $map[ $normalized ] ) ) {
+			return $map[ $normalized ];
+		}
+
+		return self::humanize_machine_value( $price_prefix );
 	}
 
 	/**
