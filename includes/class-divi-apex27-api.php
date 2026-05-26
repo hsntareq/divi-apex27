@@ -161,6 +161,59 @@ class Divi_Apex27_API {
 			'includeImages'   => 1,
 		);
 
+		$property_type = isset( $query['property_type'] ) ? sanitize_text_field( (string) $query['property_type'] ) : '';
+		$city          = isset( $query['city'] ) ? sanitize_text_field( (string) $query['city'] ) : '';
+		$min_price     = isset( $query['min_price'] ) ? absint( $query['min_price'] ) : 0;
+		$max_price     = isset( $query['max_price'] ) ? absint( $query['max_price'] ) : 0;
+		$min_beds      = isset( $query['min_beds'] ) ? absint( $query['min_beds'] ) : 0;
+		$max_beds      = isset( $query['max_beds'] ) ? absint( $query['max_beds'] ) : 0;
+		$min_yield     = isset( $query['min_gross_yield'] ) ? sanitize_text_field( (string) $query['min_gross_yield'] ) : '';
+		$sort          = isset( $query['sort'] ) ? sanitize_text_field( (string) $query['sort'] ) : '';
+		$include_sstc  = isset( $query['include_sstc'] ) ? sanitize_text_field( (string) $query['include_sstc'] ) : '';
+
+		if ( '' !== $property_type ) {
+			$params['propertyType']  = $property_type;
+			$params['property_type'] = $property_type;
+		}
+
+		if ( '' !== $city ) {
+			$params['city'] = $city;
+		}
+
+		if ( $min_price > 0 ) {
+			$params['minPrice']  = $min_price;
+			$params['min_price'] = $min_price;
+		}
+
+		if ( $max_price > 0 ) {
+			$params['maxPrice']  = $max_price;
+			$params['max_price'] = $max_price;
+		}
+
+		if ( $min_beds > 0 ) {
+			$params['minBeds']  = $min_beds;
+			$params['min_beds'] = $min_beds;
+		}
+
+		if ( $max_beds > 0 ) {
+			$params['maxBeds']  = $max_beds;
+			$params['max_beds'] = $max_beds;
+		}
+
+		if ( '' !== $min_yield ) {
+			$params['minGrossYield']  = $min_yield;
+			$params['min_gross_yield'] = $min_yield;
+		}
+
+		if ( '' !== $sort ) {
+			$params['sort'] = $sort;
+		}
+
+		if ( '' !== $include_sstc ) {
+			$params['includeSstc']  = $include_sstc;
+			$params['include_sstc'] = $include_sstc;
+		}
+
 		if ( 'valuations' === ( isset( $query['listing_type'] ) ? (string) $query['listing_type'] : 'listings' ) && ! empty( $query['valuation_type'] ) ) {
 			$params['valuationType'] = sanitize_text_field( (string) $query['valuation_type'] );
 		}

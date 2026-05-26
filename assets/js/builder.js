@@ -24,61 +24,203 @@
 		return null;
 	}
 
-	function registerModule() {
+	function getDivi() {
+		return window.divi || window.vendor?.divi || window.parent?.divi || null;
+	}
+
+	function getServerRenderedModule() {
+		const currentDivi = getDivi();
+		return currentDivi?.module?.ServerRenderedModule || null;
+	}
+
+	function getSettingValue(settings, key, fallbackValue) {
+		return settings?.[key]?.desktop?.value ?? fallbackValue;
+	}
+
+	function createSearchFormPreviewRenderer(React) {
+		const createField = (label, placeholder, key) => React.createElement(
+			'label',
+			{ className: 'divi-apex27-search-field', key },
+			React.createElement('span', null, label),
+			React.createElement(
+				'select',
+				{ disabled: true, defaultValue: '' },
+				React.createElement('option', { value: '' }, placeholder)
+			)
+		);
+
+		return function edit(props) {
+			const settings = props?.attrs?.apex27?.content || {};
+			const title = getSettingValue(settings, 'title', 'Property Search');
+			const submitLabel = getSettingValue(settings, 'submit_label', 'Update');
+			const showListingType = getSettingValue(settings, 'show_listing_type', 'off') === 'on';
+			const showType = getSettingValue(settings, 'show_type', 'on') === 'on';
+			const showPropertyType = getSettingValue(settings, 'show_property_type', 'on') === 'on';
+			const showCity = getSettingValue(settings, 'show_city', 'on') === 'on';
+			const showMinPrice = getSettingValue(settings, 'show_min_price', 'on') === 'on';
+			const showMaxPrice = getSettingValue(settings, 'show_max_price', 'on') === 'on';
+			const showMinBeds = getSettingValue(settings, 'show_min_beds', 'on') === 'on';
+			const showMaxBeds = getSettingValue(settings, 'show_max_beds', 'on') === 'on';
+			const showMinGrossYield = getSettingValue(settings, 'show_min_gross_yield', 'on') === 'on';
+			const showSort = getSettingValue(settings, 'show_sort', 'on') === 'on';
+
+			const fields = [];
+
+			if (showListingType) {
+				fields.push(createField('Listing Type', 'Listings', 'listing_type'));
+			}
+
+			if (showType) {
+				fields.push(createField('Type', 'Lettings (Residential)', 'type'));
+			}
+
+			if (showPropertyType) {
+				fields.push(createField('Property Type', 'Any property type', 'property_type'));
+			}
+
+			if (showCity) {
+				fields.push(createField('Location', 'Any location', 'city'));
+			}
+
+			if (showMinPrice) {
+				fields.push(createField('Min Price', 'No minimum', 'min_price'));
+			}
+
+			if (showMaxPrice) {
+				fields.push(createField('Max Price', 'No maximum', 'max_price'));
+			}
+
+			if (showMinBeds) {
+				fields.push(createField('Min Bedrooms', 'Any', 'min_beds'));
+			}
+
+			if (showMaxBeds) {
+				fields.push(createField('Max Bedrooms', 'Any', 'max_beds'));
+			}
+
+			if (showMinGrossYield) {
+				fields.push(createField('Min Gross Yield', 'Any yield', 'min_gross_yield'));
+			}
+
+			if (showSort) {
+				fields.push(createField('Sort', 'Highest price', 'sort'));
+			}
+
+			if (fields.length === 0) {
+				fields.push(
+					React.createElement(
+						'div',
+						{ className: 'divi-apex27-notice', key: 'empty' },
+						'All search fields are currently hidden for this module.'
+					)
+				);
+			}
+
+			return React.createElement(
+				'div',
+				{ className: 'divi-apex27-search-form' },
+				title ? React.createElement('h2', { className: 'divi-apex27-search-title' }, title) : null,
+				React.createElement(
+					'form',
+					{ className: 'divi-apex27-search-grid' },
+					fields,
+					React.createElement(
+						'div',
+						{ className: 'divi-apex27-search-actions', key: 'actions' },
+						React.createElement(
+							'button',
+							{ type: 'button', className: 'divi-apex27-search-submit' },
+							submitLabel || 'Update'
+						)
+					)
+				)
+			);
+		};
+	}
+
+	function createEditRenderer(React, loadingText) {
+		return function edit(props) {
+			try {
+				const serverRenderedModule = getServerRenderedModule();
+
+				if (!serverRenderedModule) {
+					window.setTimeout(registerModules, 300);
+					return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, loadingText);
+				}
+
+				return React.createElement(serverRenderedModule, props);
+			} catch (error) {
+				return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Apex27 preview error. Save and reload builder.');
+			}
+		};
+	}
+
+	function registerModule(definition) {
 		try {
-		if (window.diviApex27PropertyFilterRegistered) {
+		if (!definition || !definition.flag || !definition.metadata) {
+			return false;
+		}
+
+		if (!definition.metadata.attributes) {
+			return false;
+		}
+
+		if (window[definition.flag]) {
 			return true;
 		}
 
-		const divi = window.divi || window.vendor?.divi || window.parent?.divi;
+		const divi = getDivi();
 		const React = window.React || window.parent?.React;
 
 		if (!divi || !divi.moduleLibrary || !React) {
 			return false;
 		}
 
-		const metadata = window.diviApex27PropertyFilterMetadata || {
-			name: 'divi-apex27/property-filter',
-			visualBuilderScript: 'divi-apex27-builder',
-			title: 'Apex27 Property Filter',
-			titles: 'Apex27 Property Filters',
-			moduleIcon: 'divi/module-search',
-			category: 'module'
-		};
+		const metadata = definition.metadata;
+		const editRenderer = definition.createRenderer
+			? definition.createRenderer(React)
+			: createEditRenderer(React, definition.loadingText || 'Loading Apex27 preview...');
 
 		divi.moduleLibrary.registerModule(metadata, {
 			renderers: {
-				edit: function(props) {
-					try {
-						const currentDivi = window.divi || window.vendor?.divi || window.parent?.divi;
-						const serverRenderedModule = currentDivi?.module?.ServerRenderedModule ||
-							currentDivi?.module?.server?.ServerRenderedModule ||
-							currentDivi?.moduleLibrary?.ServerRenderedModule ||
-							findComponent(currentDivi?.module, 'ServerRenderedModule') ||
-							findComponent(currentDivi?.moduleLibrary, 'ServerRenderedModule');
-
-						if (!serverRenderedModule) {
-							return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Loading Apex27 property results...');
-						}
-
-						return React.createElement(serverRenderedModule, props);
-					} catch (error) {
-						return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Apex27 preview error. Save and reload builder.');
-					}
-				}
+				edit: editRenderer
 			}
 		});
 
-		window.diviApex27PropertyFilterRegistered = true;
+		window[definition.flag] = true;
 		return true;
 		} catch (error) {
 			return false;
 		}
 	}
 
-	if (hooks) {
-		hooks.addAction('divi.moduleLibrary.registerModuleLibraryStore.after', 'divi-apex27/property-filter', registerModule);
+	function registerModules() {
+		const definitions = [
+			{
+				flag: 'diviApex27PropertyFilterRegistered',
+				metadata: window.diviApex27PropertyFilterMetadata || null,
+				loadingText: 'Loading Apex27 property results...'
+			},
+			{
+				flag: 'diviApex27PropertySearchFormRegistered',
+				metadata: window.diviApex27PropertySearchFormMetadata || null,
+				loadingText: 'Loading Apex27 property search form...',
+				createRenderer: createSearchFormPreviewRenderer
+			}
+		];
+
+		let anyRegistered = false;
+		definitions.forEach((definition) => {
+			const registered = registerModule(definition);
+			anyRegistered = anyRegistered || registered;
+		});
+
+		return anyRegistered;
 	}
 
-	setTimeout(registerModule, 1500);
+	if (hooks) {
+		hooks.addAction('divi.moduleLibrary.registerModuleLibraryStore.after', 'divi-apex27/property-filter', registerModules);
+	}
+
+	setTimeout(registerModules, 1500);
 })();

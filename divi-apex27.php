@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.38
+ * Version: 1.0.48
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,12 +12,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.38' );
+define( 'DIVI_APEX27_VERSION', '1.0.48' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-api.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-renderer.php';
+require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-search-form-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-property-details.php';
 
 register_activation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_activation' ) );
@@ -227,6 +228,15 @@ function divi_apex27_enqueue_builder_assets() {
 			);
 	}
 
+	$search_form_metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/property-search-form/module.json' ), true );
+	if ( is_array( $search_form_metadata ) ) {
+		wp_add_inline_script(
+			'divi-apex27-builder',
+			'window.diviApex27PropertySearchFormMetadata = ' . wp_json_encode( $search_form_metadata ) . ';',
+			'before'
+		);
+	}
+
 	wp_enqueue_script( 'divi-apex27-builder' );
 	wp_enqueue_style(
 		'divi-apex27-builder',
@@ -255,16 +265,30 @@ function divi_apex27_register_modules() {
 		return;
 	}
 
-	$module_path = DIVI_APEX27_PATH . 'modules/property-filter';
-	$config      = array(
-		'render_callback' => 'divi_apex27_render_callback',
+	$divi5_modules = array(
+		array(
+			'path'   => DIVI_APEX27_PATH . 'modules/property-filter',
+			'config' => array(
+				'render_callback' => 'divi_apex27_render_callback',
+			),
+		),
+		array(
+			'path'   => DIVI_APEX27_PATH . 'modules/property-search-form',
+			'config' => array(
+				'render_callback' => 'divi_apex27_search_form_render_callback',
+			),
+		),
 	);
 
-	if ( class_exists( 'ET\Builder\Packages\ModuleLibrary\ModuleRegistration' ) ) {
-		ET\Builder\Packages\ModuleLibrary\ModuleRegistration::register_module( $module_path, $config );
+	if ( class_exists( 'ET\\Builder\\Packages\\ModuleLibrary\\ModuleRegistration' ) ) {
+		foreach ( $divi5_modules as $module ) {
+			ET\Builder\Packages\ModuleLibrary\ModuleRegistration::register_module( $module['path'], $module['config'] );
+		}
 		$divi5_registered = true;
 	} elseif ( function_exists( 'divi_module_library_register_module' ) ) {
-		divi_module_library_register_module( $module_path, $config );
+		foreach ( $divi5_modules as $module ) {
+			divi_module_library_register_module( $module['path'], $module['config'] );
+		}
 		$divi5_registered = true;
 	}
 }
@@ -309,6 +333,39 @@ function divi_apex27_render_callback( $attrs, $content, $block, $elements ) {
 	}
 
 	return $output . $content;
+}
+
+/**
+ * Divi 5 search form render callback.
+ *
+ * @param array     $attrs    Module attributes.
+ * @param string    $content  Module content.
+ * @param \WP_Block $block   Block object.
+ * @param object    $elements Divi elements object.
+ *
+ * @return string
+ */
+function divi_apex27_search_form_render_callback( $attrs, $content, $block, $elements ) {
+	try {
+		$output = Divi_Apex27_Search_Form_Renderer::render( Divi_Apex27_Search_Form_Renderer::attrs_to_props( $attrs ) );
+
+		return $output . $content;
+	} catch ( Throwable $error ) {
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( 'Divi Apex27 search form render failed: ' . $error->getMessage() );
+		}
+
+		$message = __( 'The Apex27 property search form could not be rendered in the builder.', 'divi-apex27' );
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			$message .= ' ' . $error->getMessage();
+		}
+
+		return sprintf(
+			'<div class="divi-apex27-notice divi-apex27-builder-placeholder">%s</div>',
+			esc_html( $message )
+		);
+	}
 }
 
 /**

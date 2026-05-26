@@ -1,0 +1,382 @@
+{
+    "name": "divi-apex27/property-search-form",
+    "version": "1.0.9",
+    "apiVersion": 2,
+    "title": "Apex27 Property Search Form",
+    "titles": "Apex27 Property Search Forms",
+    "moduleIcon": "divi/module-search",
+    "moduleClassName": "divi-apex27-search-form-module",
+    "moduleOrderClassName": "divi_apex27_property_search_form",
+    "category": "module",
+    "visualBuilderScript": "divi-apex27-builder",
+    "attributes": {
+        "module": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "settings": {
+                "meta": {
+                    "meta": {}
+                },
+                "advanced": {
+                    "html": {},
+                    "link": {},
+                    "text": {},
+                    "loop": {}
+                },
+                "decoration": {
+                    "animation": {},
+                    "attributes": {},
+                    "background": {},
+                    "border": {},
+                    "boxShadow": {},
+                    "conditions": {},
+                    "disabledOn": {},
+                    "filters": {},
+                    "interactions": {},
+                    "overflow": {},
+                    "order": {},
+                    "position": {},
+                    "scroll": {},
+                    "sizing": {},
+                    "spacing": {},
+                    "sticky": {},
+                    "transform": {},
+                    "transition": {},
+                    "zIndex": {}
+                }
+            }
+        },
+        "apex27": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "default": {
+                "content": {
+                    "title": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "default_type": {
+                        "desktop": {
+                            "value": "rent"
+                        }
+                    },
+                    "default_listing_type": {
+                        "desktop": {
+                            "value": "listings"
+                        }
+                    },
+                    "show_listing_type": {
+                        "desktop": {
+                            "value": "off"
+                        }
+                    },
+                    "show_type": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_property_type": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_city": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_min_price": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_max_price": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_min_beds": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_max_beds": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_min_gross_yield": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_sort": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "submit_label": {
+                        "desktop": {
+                            "value": "Update"
+                        }
+                    },
+                    "action_url": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "content": {
+                    "title": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.title",
+                            "priority": 5,
+                            "render": true,
+                            "label": "Title",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "default_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.default_type",
+                            "priority": 10,
+                            "render": true,
+                            "label": "Default Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "sale": { "label": "Sales (Residential)" },
+                                        "rent": { "label": "Lettings (Residential)" },
+                                        "land": { "label": "Land" },
+                                        "commercial_sale": { "label": "Sales (Commercial)" },
+                                        "commercial_rent": { "label": "Lettings (Commercial)" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "show_listing_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_listing_type",
+                            "priority": 12,
+                            "render": true,
+                            "label": "Show Listing Type",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "default_listing_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.default_listing_type",
+                            "priority": 13,
+                            "render": true,
+                            "label": "Default Listing Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "listings": { "label": "Listings" },
+                                        "valuations": { "label": "Valuations" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "show_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_type",
+                            "priority": 15,
+                            "render": true,
+                            "label": "Show Type",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_property_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_property_type",
+                            "priority": 16,
+                            "render": true,
+                            "label": "Show Property Type",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_city": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_city",
+                            "priority": 17,
+                            "render": true,
+                            "label": "Show Location",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_min_price": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_min_price",
+                            "priority": 18,
+                            "render": true,
+                            "label": "Show Min Price",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_max_price": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_max_price",
+                            "priority": 19,
+                            "render": true,
+                            "label": "Show Max Price",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_min_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_min_beds",
+                            "priority": 20,
+                            "render": true,
+                            "label": "Show Min Bedrooms",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_max_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_max_beds",
+                            "priority": 21,
+                            "render": true,
+                            "label": "Show Max Bedrooms",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_min_gross_yield": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_min_gross_yield",
+                            "priority": 22,
+                            "render": true,
+                            "label": "Show Min Gross Yield",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_sort": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.show_sort",
+                            "priority": 23,
+                            "render": true,
+                            "label": "Show Sort Field",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "submit_label": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.submit_label",
+                            "priority": 24,
+                            "render": true,
+                            "label": "Submit Label",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "action_url": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "searchFields",
+                            "attrName": "apex27.content.action_url",
+                            "priority": 25,
+                            "render": true,
+                            "label": "Action URL",
+                            "description": "Leave empty to use /property-search/",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "customCssFields": {},
+    "settings": {
+        "content": "auto",
+        "design": "auto",
+        "advanced": "auto",
+        "groups": {
+            "searchFields": {
+                "panel": "content",
+                "priority": 10,
+                "groupName": "mainContent",
+                "component": {
+                    "name": "divi/composite",
+                    "props": {
+                        "groupLabel": "Search Form"
+                    }
+                }
+            }
+        }
+    }
+}

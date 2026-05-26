@@ -195,6 +195,56 @@
 	font-size: 13px;
 }
 
+.divi-apex27-search-form {
+	margin: 0 0 28px;
+	padding: 20px;
+	border: 1px solid #e5e5e5;
+	background: #fff;
+}
+
+.divi-apex27-search-title {
+	margin: 0 0 14px;
+	font-size: 26px;
+	line-height: 1.25;
+}
+
+.divi-apex27-search-grid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 12px;
+}
+
+.divi-apex27-search-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: 13px;
+	color: #3a3a3a;
+}
+
+.divi-apex27-search-field select {
+	height: 42px;
+	padding: 0 10px;
+	border: 1px solid #d5d5d5;
+	background: #fff;
+	font-size: 14px;
+	color: #202020;
+}
+
+.divi-apex27-search-actions {
+	display: flex;
+	align-items: flex-end;
+}
+
+.divi-apex27-search-submit {
+	padding: 10px 18px;
+	border: 0;
+	background: #111;
+	color: #fff;
+	font-weight: 600;
+	cursor: pointer;
+}
+
 .divi-apex27-details {
 	max-width: 1240px;
 	margin: 0 auto;
@@ -372,6 +422,10 @@
 		grid-template-columns: repeat(var(--apex27-columns-md, 2), minmax(0, 1fr));
 	}
 
+	.divi-apex27-search-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
 	.divi-apex27-details-gallery {
 		margin: 16px 0 22px;
 	}
@@ -389,6 +443,22 @@
 
 	.divi-apex27-results {
 		grid-template-columns: repeat(var(--apex27-columns-sm, 1), minmax(0, 1fr));
+	}
+
+	.divi-apex27-search-form {
+		padding: 16px;
+	}
+
+	.divi-apex27-search-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.divi-apex27-search-actions {
+		justify-content: stretch;
+	}
+
+	.divi-apex27-search-submit {
+		width: 100%;
 	}
 
 	.divi-apex27-details {

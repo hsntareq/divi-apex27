@@ -16,6 +16,7 @@ class Divi_Apex27_Property_Details {
 
 	const PAGE_QUERY_VAR = 'divi_apex27_page_name';
 	const PAGE_VALUE     = 'property-details';
+	const SEARCH_PAGE_VALUE = 'property-search';
 
 	/**
 	 * Cached request context.
@@ -71,6 +72,12 @@ class Divi_Apex27_Property_Details {
 	 */
 	public function register_rewrite_rules() {
 		add_rewrite_rule(
+			'^property-search/?$',
+			'index.php?' . self::PAGE_QUERY_VAR . '=' . self::SEARCH_PAGE_VALUE,
+			'top'
+		);
+
+		add_rewrite_rule(
 			'^property-details/(sales|lettings|new-homes|land|commercial-sales|commercial-lettings)/[^/]+/([0-9]+)/?$',
 			'index.php?' . self::PAGE_QUERY_VAR . '=' . self::PAGE_VALUE . '&listing_id=$matches[2]',
 			'top'
@@ -99,6 +106,12 @@ class Divi_Apex27_Property_Details {
 	 * @return array
 	 */
 	public function document_title_parts( $parts ) {
+		if ( $this->is_property_search_request() ) {
+			$parts['title'] = __( 'Property Search', 'divi-apex27' );
+
+			return $parts;
+		}
+
 		if ( ! $this->is_property_details_request() ) {
 			return $parts;
 		}
@@ -119,7 +132,7 @@ class Divi_Apex27_Property_Details {
 	 * @return void
 	 */
 	public function enqueue_assets() {
-		if ( ! $this->is_property_details_request() ) {
+		if ( ! $this->is_property_details_request() && ! $this->is_property_search_request() ) {
 			return;
 		}
 
@@ -139,6 +152,17 @@ class Divi_Apex27_Property_Details {
 	 * @return string
 	 */
 	public function template_include( $template ) {
+		if ( $this->is_property_search_request() ) {
+			$GLOBALS['divi_apex27_property_search_context'] = $this->get_search_context();
+
+			$search_template = DIVI_APEX27_PATH . 'templates/property-search.php';
+			if ( file_exists( $search_template ) ) {
+				return $search_template;
+			}
+
+			return $template;
+		}
+
 		if ( ! $this->is_property_details_request() ) {
 			return $template;
 		}
@@ -162,6 +186,17 @@ class Divi_Apex27_Property_Details {
 		$page = (string) get_query_var( self::PAGE_QUERY_VAR, '' );
 
 		return self::PAGE_VALUE === $page;
+	}
+
+	/**
+	 * Determine if this request is for the property search route.
+	 *
+	 * @return bool
+	 */
+	private function is_property_search_request() {
+		$page = (string) get_query_var( self::PAGE_QUERY_VAR, '' );
+
+		return self::SEARCH_PAGE_VALUE === $page;
 	}
 
 	/**
@@ -200,5 +235,38 @@ class Divi_Apex27_Property_Details {
 		);
 
 		return $this->context;
+	}
+
+	/**
+	 * Build search page context.
+	 *
+	 * @return array
+	 */
+	private function get_search_context() {
+		$api = new Divi_Apex27_API();
+
+		if ( ! $api->is_configured() ) {
+			return array(
+				'error_message' => __( 'Apex27 settings are not configured.', 'divi-apex27' ),
+				'listing_type'  => 'listings',
+				'type'          => 'rent',
+			);
+		}
+
+		$listing_type = 'listings';
+		if ( isset( $_GET['listing_type'] ) && ! is_array( $_GET['listing_type'] ) ) {
+			$listing_type = sanitize_text_field( wp_unslash( $_GET['listing_type'] ) );
+		}
+
+		$type = 'rent';
+		if ( isset( $_GET['type'] ) && ! is_array( $_GET['type'] ) ) {
+			$type = sanitize_text_field( wp_unslash( $_GET['type'] ) );
+		}
+
+		return array(
+			'error_message' => '',
+			'listing_type'  => $listing_type,
+			'type'          => $type,
+		);
 	}
 }
