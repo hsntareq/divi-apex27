@@ -18,6 +18,10 @@ define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-api.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-renderer.php';
+require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-property-details.php';
+
+register_activation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_activation' ) );
+register_deactivation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_deactivation' ) );
 
 add_action( 'wp_enqueue_scripts', 'divi_apex27_enqueue_assets' );
 add_action( 'divi_visual_builder_assets_before_enqueue_scripts', 'divi_apex27_enqueue_builder_assets' );
@@ -27,6 +31,25 @@ add_action( 'init', 'divi_apex27_register_modules', 20 );
 add_action( 'admin_init', 'divi_apex27_register_settings' );
 add_action( 'admin_menu', 'divi_apex27_register_settings_page' );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
+
+divi_apex27_boot_property_details();
+
+/**
+ * Boot standalone property-details handling.
+ *
+ * @return void
+ */
+function divi_apex27_boot_property_details() {
+	static $booted = false;
+
+	if ( $booted ) {
+		return;
+	}
+
+	$handler = new Divi_Apex27_Property_Details();
+	$handler->register();
+	$booted = true;
+}
 
 /**
  * Register settings fields for Divi Apex27.

@@ -264,6 +264,42 @@ class Divi_Apex27_API {
 	}
 
 	/**
+	 * Fetch a single property details payload from the portal API.
+	 *
+	 * @param int $listing_id Listing ID.
+	 *
+	 * @return object|\WP_Error
+	 */
+	public function get_property_details( $listing_id ) {
+		$listing_id = absint( $listing_id );
+
+		if ( $listing_id < 1 ) {
+			return new WP_Error( 'divi_apex27_invalid_listing_id', __( 'Invalid listing ID for property details.', 'divi-apex27' ) );
+		}
+
+		// Prefer REST details endpoint used by this plugin's listing feed.
+		$fallback = $this->get_listing_by_id( $listing_id );
+
+		if ( ! is_wp_error( $fallback ) && is_object( $fallback ) ) {
+			return $fallback;
+		}
+
+		$details = $this->request(
+			'get-listing',
+			array(
+				'id'     => $listing_id,
+				'locale' => get_locale(),
+			)
+		);
+
+		if ( ! is_wp_error( $details ) && is_object( $details ) ) {
+			return $details;
+		}
+
+		return is_wp_error( $fallback ) ? $details : $fallback;
+	}
+
+	/**
 	 * Build the exact property-search query payload used by the original plugin.
 	 *
 	 * @param array $query Module query values.
