@@ -127,10 +127,21 @@
 					return React.createElement('div', { className: 'divi-apex27-notice divi-apex27-builder-placeholder' }, this.state.error);
 				}
 
-				return React.createElement('div', {
-					className: 'divi-apex27-builder-mode',
-					dangerouslySetInnerHTML: { __html: this.state.html }
-				});
+				return React.createElement(
+					'div',
+					{ className: 'divi-apex27-builder-preview-wrap' },
+					React.createElement('div', {
+						className: 'divi-apex27-builder-mode',
+						dangerouslySetInnerHTML: { __html: this.state.html }
+					}),
+					this.state.loading
+						? React.createElement(
+							'div',
+							{ className: 'divi-apex27-builder-loading-overlay' },
+							React.createElement('span', { className: 'divi-apex27-builder-loading-text' }, 'Updating results...')
+						)
+						: null
+				);
 			}
 		}
 

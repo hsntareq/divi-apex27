@@ -199,6 +199,43 @@
 	font-size: 13px;
 }
 
+.divi-apex27-builder-preview-wrap {
+	position: relative;
+}
+
+.divi-apex27-builder-loading-overlay {
+	position: absolute;
+	inset: 0;
+	z-index: 4;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	background: rgba(255, 255, 255, 0.78);
+	color: #3d3d3d;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.divi-apex27-builder-loading-overlay::before {
+	content: '';
+	width: 18px;
+	height: 18px;
+	border: 2px solid #c9c9c9;
+	border-top-color: #1f1f1f;
+	border-radius: 50%;
+	animation: divi-apex27-spin 0.7s linear infinite;
+}
+
+@keyframes divi-apex27-spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
 .divi-apex27-search-form {
 	margin: 0 0 28px;
 	padding: 20px;
