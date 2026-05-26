@@ -69,6 +69,13 @@
 
 		const content = metadata?.attributes?.apex27?.default?.content;
 		if (content) {
+			const allowedDefaultKeys = new Set(['title', 'row_count', 'column_count', 'empty_text', 'listing_type', 'type', 'include_sstc']);
+			Object.keys(content).forEach((key) => {
+				if (!allowedDefaultKeys.has(key)) {
+					delete content[key];
+				}
+			});
+
 			if (content.title?.desktop) {
 				content.title.desktop.value = 'Available For Sale';
 			}
@@ -88,10 +95,23 @@
 			};
 		}
 
+		const moduleContentSettings = metadata?.attributes?.apex27?.settings?.content;
+		if (moduleContentSettings) {
+			Object.keys(moduleContentSettings).forEach((key) => {
+				if (!['title', 'column_count', 'row_count', 'empty_text'].includes(key)) {
+					delete moduleContentSettings[key];
+				}
+			});
+		}
+
 		return metadata;
 	}
 
-	function createPropertyFilterPreviewRenderer(React) {
+	function createPropertyFilterPreviewRenderer(React, options = {}) {
+		const action = options.action || 'divi_apex27_builder_filter_preview';
+		const loadingText = options.loadingText || 'Loading Apex27 property results...';
+		const updatingText = options.updatingText || 'Updating results...';
+
 		class PropertyFilterPreview extends React.Component {
 			constructor(props) {
 				super(props);
@@ -122,7 +142,7 @@
 				this.setState({ loading: true, error: '' });
 
 				const body = new URLSearchParams();
-				body.set('action', 'divi_apex27_builder_filter_preview');
+				body.set('action', action);
 				body.set('attrs', JSON.stringify(attrs));
 
 				fetch(getAjaxUrl(), {
@@ -157,7 +177,7 @@
 
 			render() {
 				if (this.state.loading && !this.state.html) {
-					return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Loading Apex27 property results...');
+					return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, loadingText);
 				}
 
 				if (this.state.error && !this.state.html) {
@@ -175,7 +195,7 @@
 						? React.createElement(
 							'div',
 							{ className: 'divi-apex27-builder-loading-overlay' },
-							React.createElement('span', { className: 'divi-apex27-builder-loading-text' }, 'Updating results...')
+							React.createElement('span', { className: 'divi-apex27-builder-loading-text' }, updatingText)
 						)
 						: null
 				);
@@ -354,7 +374,11 @@
 				flag: 'diviApex27PropertyFilterRegistered',
 				metadata: window.diviApex27PropertyFilterMetadata || null,
 				loadingText: 'Loading Apex27 property results...',
-				createRenderer: createPropertyFilterPreviewRenderer
+				createRenderer: (React) => createPropertyFilterPreviewRenderer(React, {
+					action: 'divi_apex27_builder_filter_preview',
+					loadingText: 'Loading Apex27 property results...',
+					updatingText: 'Updating results...'
+				})
 			},
 			{
 				flag: 'diviApex27PropertySearchFormRegistered',
@@ -365,7 +389,12 @@
 			{
 				flag: 'diviApex27PropertyForSaleRegistered',
 				metadata: forSaleMetadata,
-				loadingText: 'Loading Apex27 available for sale properties...'
+				loadingText: 'Loading Apex27 available for sale properties...',
+				createRenderer: (React) => createPropertyFilterPreviewRenderer(React, {
+					action: 'divi_apex27_builder_for_sale_preview',
+					loadingText: 'Loading Apex27 available for sale properties...',
+					updatingText: 'Updating available for sale properties...'
+				})
 			}
 		];
 

@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/property-for-sale",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "apiVersion": 2,
     "title": "Apex27 Available For Sale",
     "titles": "Apex27 Available For Sale",
@@ -81,21 +81,6 @@
                             "value": "4"
                         }
                     },
-                    "property_type": {
-                        "desktop": {
-                            "value": ""
-                        }
-                    },
-                    "city": {
-                        "desktop": {
-                            "value": ""
-                        }
-                    },
-                    "sort": {
-                        "desktop": {
-                            "value": "highest_price"
-                        }
-                    },
                     "empty_text": {
                         "desktop": {
                             "value": "No available for sale properties found."
@@ -162,70 +147,6 @@
                                         "4": { "label": "4" },
                                         "5": { "label": "5" },
                                         "6": { "label": "6" }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "property_type": {
-                        "groupType": "group-item",
-                        "item": {
-                            "groupSlug": "saleFields",
-                            "attrName": "apex27.content.property_type",
-                            "priority": 15,
-                            "render": true,
-                            "label": "Property Type",
-                            "component": {
-                                "name": "divi/select",
-                                "type": "field",
-                                "props": {
-                                    "options": {
-                                        "": { "label": "Any property type" },
-                                        "bungalow": { "label": "Bungalow" },
-                                        "detached_house": { "label": "Detached House" },
-                                        "end_terrace": { "label": "End Terraced House" },
-                                        "flat": { "label": "Flat" },
-                                        "house": { "label": "House" },
-                                        "maisonette": { "label": "Maisonette" },
-                                        "semi_detached_house": { "label": "Semi-detached House" },
-                                        "studio": { "label": "Studio" },
-                                        "terraced": { "label": "Terraced House" }
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "city": {
-                        "groupType": "group-item",
-                        "item": {
-                            "groupSlug": "saleFields",
-                            "attrName": "apex27.content.city",
-                            "priority": 20,
-                            "render": true,
-                            "label": "Location",
-                            "component": {
-                                "name": "divi/text",
-                                "type": "field"
-                            }
-                        }
-                    },
-                    "sort": {
-                        "groupType": "group-item",
-                        "item": {
-                            "groupSlug": "saleFields",
-                            "attrName": "apex27.content.sort",
-                            "priority": 25,
-                            "render": true,
-                            "label": "Sort",
-                            "component": {
-                                "name": "divi/select",
-                                "type": "field",
-                                "props": {
-                                    "options": {
-                                        "highest_price": { "label": "Highest price" },
-                                        "lowest_price": { "label": "Lowest price" },
-                                        "highest_yield": { "label": "Highest yield" },
-                                        "lowest_yield": { "label": "Lowest yield" }
                                     }
                                 }
                             }

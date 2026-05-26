@@ -22,6 +22,7 @@ class Divi_Apex27_Renderer {
 	public static function defaults() {
 		return array(
 			'title'         => '',
+			'locked_query'  => '',
 			'listing_type'  => 'listings',
 			'type'          => 'rent',
 			'row_count'     => '2',
@@ -96,6 +97,13 @@ class Divi_Apex27_Renderer {
 	 * @return array
 	 */
 	private static function current_query( array $props ) {
+		$locked_query = isset( $props['locked_query'] ) ? sanitize_text_field( (string) $props['locked_query'] ) : '';
+		$locked_keys  = array();
+
+		if ( 'for_sale_available' === $locked_query ) {
+			$locked_keys = array( 'listing_type', 'type', 'include_sstc' );
+		}
+
 		$aliases = array(
 			'listing_type'  => array( 'apex27_listing_type', 'listing_type', 'listingType' ),
 			'type'          => array( 'apex27_type', 'transaction_type' ),
@@ -118,18 +126,26 @@ class Divi_Apex27_Renderer {
 		foreach ( $aliases as $canonical => $keys ) {
 			$value = isset( $props[ $canonical ] ) ? sanitize_text_field( (string) $props[ $canonical ] ) : '';
 
-			if ( isset( $_GET[ $canonical ] ) && ! is_array( $_GET[ $canonical ] ) ) {
-				$value = sanitize_text_field( wp_unslash( $_GET[ $canonical ] ) );
-			}
+			if ( ! in_array( $canonical, $locked_keys, true ) ) {
+				if ( isset( $_GET[ $canonical ] ) && ! is_array( $_GET[ $canonical ] ) ) {
+					$value = sanitize_text_field( wp_unslash( $_GET[ $canonical ] ) );
+				}
 
-			foreach ( $keys as $key ) {
-				if ( isset( $_GET[ $key ] ) && ! is_array( $_GET[ $key ] ) ) {
-					$value = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
-					break;
+				foreach ( $keys as $key ) {
+					if ( isset( $_GET[ $key ] ) && ! is_array( $_GET[ $key ] ) ) {
+						$value = sanitize_text_field( wp_unslash( $_GET[ $key ] ) );
+						break;
+					}
 				}
 			}
 
 			$query[ $canonical ] = $value;
+		}
+
+		if ( 'for_sale_available' === $locked_query ) {
+			$query['listing_type'] = 'listings';
+			$query['type']         = 'sale';
+			$query['include_sstc'] = '0';
 		}
 
 		$resolved_page = self::requested_page_from_url();
