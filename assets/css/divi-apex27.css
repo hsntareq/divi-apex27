@@ -18,15 +18,17 @@
 }
 
 .divi-apex27-card {
-	border: 1px solid #e4e4e4;
+	border: 1px solid #d6dde5;
+	border-radius: 6px;
 	background: #fff;
 	overflow: hidden;
+	box-shadow: 0 1px 0 rgba(18, 42, 66, 0.04);
 }
 
 .divi-apex27-card-media {
 	display: block;
 	position: relative;
-	aspect-ratio: 16 / 10;
+	aspect-ratio: 16 / 11;
 	background: #f1f1f1;
 }
 
@@ -38,26 +40,85 @@
 }
 
 .divi-apex27-card-body {
-	padding: 18px;
+	padding: 16px 16px 14px;
 }
 
 .divi-apex27-card h3 {
-	margin: 0 0 10px;
-	font-size: 18px;
+	margin: 0;
+	font-size: 31px;
+	font-size: clamp(20px, 1.05vw, 31px);
 	line-height: 1.25;
 }
 
+.divi-apex27-card-title-link {
+	color: #1f2a37;
+	text-decoration: none;
+}
+
+.divi-apex27-card-title-link:hover,
+.divi-apex27-card-title-link:focus {
+	text-decoration: underline;
+}
+
+.divi-apex27-card-location {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin: 10px 0 0;
+	font-size: 14px;
+	line-height: 1.35;
+	color: #5a6572;
+}
+
+.divi-apex27-card-location-icon {
+	position: relative;
+	width: 12px;
+	height: 12px;
+	border: 1.8px solid #6a7583;
+	border-radius: 99px;
+	flex: 0 0 auto;
+}
+
+.divi-apex27-card-location-icon::after {
+	content: '';
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	width: 3px;
+	height: 3px;
+	background: #6a7583;
+	border-radius: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.divi-apex27-card-divider {
+	margin: 12px 0;
+	border-top: 1px solid #e4e9ee;
+}
+
+.divi-apex27-card-footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 8px;
+}
+
 .divi-apex27-card-price {
-	margin: 0 0 10px;
-	font-size: 17px;
+	margin: 0;
+	font-size: 29px;
+	font-size: clamp(18px, 1.02vw, 29px);
 	font-weight: 700;
-	color: #111;
+	line-height: 1.2;
+	color: #2b3a4a;
+	text-align: right;
 }
 
 .divi-apex27-card-price small {
-	font-size: 12px;
+	font-size: 16px;
+	font-size: clamp(12px, 0.55vw, 16px);
 	font-weight: 600;
-	color: #555;
+	color: #5f6b79;
 }
 
 .divi-apex27-card-subtitle {
@@ -69,69 +130,92 @@
 .divi-apex27-card-aux {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px 12px;
+	gap: 6px 10px;
 	margin: 0 0 10px;
 	font-size: 12px;
-	color: #444;
+	color: #5f6b79;
 }
 
 .divi-apex27-card-landlord {
 	margin: 0 0 10px;
 	font-size: 13px;
-	color: #444;
+	color: #5f6b79;
 }
 
 .divi-apex27-card-meta {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 10px;
-	margin: 0 0 12px;
-	color: #555;
-	font-size: 13px;
+	gap: 12px;
+	margin: 0;
+	color: #5f6b79;
+	font-size: 16px;
+	font-size: clamp(12px, 0.55vw, 16px);
+}
+
+.divi-apex27-card-feature {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-weight: 600;
+}
+
+.divi-apex27-card-feature-icon {
+	display: inline-block;
+	width: 11px;
+	height: 7px;
+	border: 1.5px solid #768292;
+	border-radius: 1px;
+	position: relative;
+	flex: 0 0 auto;
+}
+
+.divi-apex27-card-feature-icon::before {
+	content: '';
+	position: absolute;
+	left: 2px;
+	right: 2px;
+	bottom: -3px;
+	height: 2px;
+	background: #768292;
+	border-radius: 1px;
 }
 
 .divi-apex27-card-summary {
-	margin: 0 0 14px;
-	color: #555;
+	margin: 6px 0 12px;
+	color: #495665;
 	font-size: 14px;
 	line-height: 1.5;
 }
 
 .divi-apex27-card-income,
 .divi-apex27-card-yield {
-	margin: 0 0 8px;
+	margin: 0 0 10px;
 	font-size: 13px;
-	color: #444;
+	color: #5f6b79;
 }
 
-.divi-apex27-card-overlay {
-	position: absolute;
-	left: 8px;
-	top: 8px;
-	padding: 4px 7px;
-	background: rgba(0, 0, 0, 0.72);
-	color: #fff;
-	font-size: 11px;
-	line-height: 1.2;
-	border-radius: 2px;
-}
-
+.divi-apex27-card-badge,
+.divi-apex27-card-overlay,
 .divi-apex27-card-banner {
 	position: absolute;
-	right: 8px;
-	top: 8px;
-	padding: 4px 7px;
-	background: #0e9a5b;
-	color: #fff;
+	left: 10px;
+	top: 10px;
+	padding: 6px 10px;
+	background: #e8b04f;
+	color: #222;
 	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 	line-height: 1.2;
-	border-radius: 2px;
+	border-radius: 3px;
 }
 
 .divi-apex27-card-link {
 	display: inline-block;
-	color: #000;
-	font-weight: 700;
+	color: #243447;
+	font-weight: 600;
+	font-size: 13px;
 	text-decoration: underline;
 }
 
@@ -495,6 +579,15 @@
 
 	.divi-apex27-search-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.divi-apex27-card-footer {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.divi-apex27-card-price {
+		text-align: left;
 	}
 
 	.divi-apex27-search-actions {

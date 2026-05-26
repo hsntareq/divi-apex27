@@ -793,6 +793,7 @@ class Divi_Apex27_Renderer {
 		$price    = self::first_property_value( $property, array( 'displayPrice', 'display_price', 'price', 'valuationPrice', 'valuation_price', 'valuationAmount', 'valuation_amount', 'amount' ), '' );
 		$price_prefix = self::first_property_value( $property, array( 'pricePrefix', 'price_prefix' ), '' );
 		$subtitle = self::first_property_value( $property, array( 'subtitle', 'subTitle' ), '' );
+		$location = self::first_property_value( $property, array( 'displayCity', 'display_city', 'city', 'town', 'area', 'locality', 'localityName', 'locality_name' ), '' );
 		$summary  = self::first_property_value( $property, array( 'summary', 'subtitle', 'description', 'shortDescription', 'short_description', 'details' ), '' );
 		$status   = self::first_property_value( $property, array( 'status', 'availability', 'listingStatus', 'listing_status', 'propertyStatus', 'property_status' ), '' );
 		$reference = self::first_property_value( $property, array( 'reference', 'ref', 'listingReference', 'listing_reference', 'propertyReference', 'property_reference' ), '' );
@@ -804,6 +805,23 @@ class Divi_Apex27_Renderer {
 		$gross_yield = self::first_property_value( $property, array( 'grossYield', 'gross_yield' ), '' );
 		$image    = self::extract_property_image_url( $property );
 		$url      = self::property_url( $property );
+
+		if ( '' === $location ) {
+			$location = $subtitle;
+		}
+
+		$badge = $banner;
+		if ( '' === trim( $badge ) ) {
+			$badge = $image_overlay_text;
+		}
+
+		if ( '' === trim( $badge ) ) {
+			$badge = $status;
+		}
+
+		if ( '' === trim( $badge ) ) {
+			$badge = false !== stripos( $price_prefix, 'pcm' ) ? __( 'To Let', 'divi-apex27' ) : __( 'For Sale', 'divi-apex27' );
+		}
 
 		if ( '' === trim( $image ) ) {
 			$image = self::fallback_property_image_url();
@@ -819,19 +837,49 @@ class Divi_Apex27_Renderer {
 				esc_attr( wp_strip_all_tags( $title ) )
 			);
 
-			if ( $image_overlay_text ) {
-				$output .= sprintf( '<span class="divi-apex27-card-overlay">%s</span>', esc_html( $image_overlay_text ) );
-			}
-
-			if ( $banner ) {
-				$output .= sprintf( '<span class="divi-apex27-card-banner">%s</span>', esc_html( $banner ) );
+			if ( $badge ) {
+				$output .= sprintf( '<span class="divi-apex27-card-badge">%s</span>', esc_html( $badge ) );
 			}
 
 			$output .= '</a>';
 		}
 
 		$output .= '<div class="divi-apex27-card-body">';
-		$output .= sprintf( '<h3>%s</h3>', esc_html( $title ) );
+		$output .= sprintf( '<h3><a class="divi-apex27-card-title-link" href="%s">%s</a></h3>', esc_url( $url ), esc_html( $title ) );
+
+		if ( $location ) {
+			$output .= sprintf( '<p class="divi-apex27-card-location"><span class="divi-apex27-card-location-icon" aria-hidden="true"></span><span>%s</span></p>', esc_html( $location ) );
+		}
+
+		$output .= '<div class="divi-apex27-card-divider" aria-hidden="true"></div>';
+
+		$bedrooms   = self::first_property_value( $property, array( 'bedrooms', 'bedroomCount', 'bedroom_count', 'beds' ), '' );
+		$bathrooms  = self::first_property_value( $property, array( 'bathrooms', 'bathroomCount', 'bathroom_count', 'baths' ), '' );
+		$receptions = self::first_property_value( $property, array( 'livingRooms', 'living_rooms', 'receptions', 'receptionRooms', 'reception_rooms' ), '' );
+
+		$has_features = '' !== $bedrooms || '' !== $bathrooms || '' !== $receptions;
+
+		if ( $has_features || $price ) {
+			$output .= '<div class="divi-apex27-card-footer">';
+
+			if ( $has_features ) {
+				$output .= '<p class="divi-apex27-card-meta">';
+				$output .= '' !== $bedrooms ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bedrooms ) ) : '';
+				$output .= '' !== $bathrooms ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $bathrooms ) ) : '';
+				$output .= '' !== $receptions ? sprintf( '<span class="divi-apex27-card-feature"><span class="divi-apex27-card-feature-icon" aria-hidden="true"></span>%s</span>', esc_html( $receptions ) ) : '';
+				$output .= '</p>';
+			}
+
+			if ( $price ) {
+				$output .= '<p class="divi-apex27-card-price">' . esc_html( $price );
+				if ( $price_prefix ) {
+					$output .= ' <small>' . esc_html( $price_prefix ) . '</small>';
+				}
+				$output .= '</p>';
+			}
+
+			$output .= '</div>';
+		}
 
 		if ( $reference || $status || $property_type ) {
 			$output .= '<p class="divi-apex27-card-aux">';
@@ -841,32 +889,8 @@ class Divi_Apex27_Renderer {
 			$output .= '</p>';
 		}
 
-		if ( $price ) {
-			$output .= '<p class="divi-apex27-card-price">' . esc_html( $price );
-			if ( $price_prefix ) {
-				$output .= ' <small>' . esc_html( $price_prefix ) . '</small>';
-			}
-			$output .= '</p>';
-		}
-
-		if ( $subtitle ) {
-			$output .= sprintf( '<p class="divi-apex27-card-subtitle">%s</p>', esc_html( $subtitle ) );
-		}
-
 		if ( $landlord ) {
 			$output .= sprintf( '<p class="divi-apex27-card-landlord"><strong>%s:</strong> %s</p>', esc_html__( 'Landlord', 'divi-apex27' ), esc_html( $landlord ) );
-		}
-
-		$bedrooms   = self::first_property_value( $property, array( 'bedrooms', 'bedroomCount', 'bedroom_count', 'beds' ), '' );
-		$bathrooms  = self::first_property_value( $property, array( 'bathrooms', 'bathroomCount', 'bathroom_count', 'baths' ), '' );
-		$receptions = self::first_property_value( $property, array( 'livingRooms', 'living_rooms', 'receptions', 'receptionRooms', 'reception_rooms' ), '' );
-
-		if ( '' !== $bedrooms || '' !== $bathrooms || '' !== $receptions ) {
-			$output .= '<p class="divi-apex27-card-meta">';
-			$output .= '' !== $bedrooms ? sprintf( '<span>%s beds</span>', esc_html( $bedrooms ) ) : '';
-			$output .= '' !== $bathrooms ? sprintf( '<span>%s baths</span>', esc_html( $bathrooms ) ) : '';
-			$output .= '' !== $receptions ? sprintf( '<span>%s receptions</span>', esc_html( $receptions ) ) : '';
-			$output .= '</p>';
 		}
 
 		if ( $summary ) {
