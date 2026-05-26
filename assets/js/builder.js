@@ -50,6 +50,98 @@
 		return settings?.[key]?.desktop?.value ?? fallbackValue;
 	}
 
+	function getAjaxUrl() {
+		return window.et_fb_options?.ajaxurl || window.ajaxurl || '/wp-admin/admin-ajax.php';
+	}
+
+	function createPropertyFilterPreviewRenderer(React) {
+		class PropertyFilterPreview extends React.Component {
+			constructor(props) {
+				super(props);
+				this.state = { html: '', loading: true, error: '' };
+				this.lastAttrsKey = '';
+				this.isMountedFlag = false;
+			}
+
+			componentDidMount() {
+				this.isMountedFlag = true;
+				this.loadPreview();
+			}
+
+			componentDidUpdate(prevProps) {
+				if (prevProps.attrsKey !== this.props.attrsKey) {
+					this.loadPreview();
+				}
+			}
+
+			componentWillUnmount() {
+				this.isMountedFlag = false;
+			}
+
+			loadPreview() {
+				const attrs = this.props.attrs || {};
+				const attrsKey = this.props.attrsKey || '{}';
+				this.lastAttrsKey = attrsKey;
+				this.setState({ loading: true, error: '' });
+
+				const body = new URLSearchParams();
+				body.set('action', 'divi_apex27_builder_filter_preview');
+				body.set('attrs', JSON.stringify(attrs));
+
+				fetch(getAjaxUrl(), {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: {
+						'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+					},
+					body: body.toString()
+				})
+					.then((response) => response.json())
+					.then((data) => {
+						if (!this.isMountedFlag || this.lastAttrsKey !== attrsKey) {
+							return;
+						}
+
+						if (data?.success && typeof data?.data?.html === 'string') {
+							this.setState({ html: data.data.html, loading: false, error: '' });
+							return;
+						}
+
+						this.setState({ loading: false, error: 'Preview unavailable. Save and reload builder.' });
+					})
+					.catch(() => {
+						if (!this.isMountedFlag || this.lastAttrsKey !== attrsKey) {
+							return;
+						}
+
+						this.setState({ loading: false, error: 'Preview request failed. Save and reload builder.' });
+					});
+			}
+
+			render() {
+				if (this.state.loading && !this.state.html) {
+					return React.createElement('div', { className: 'divi-apex27-builder-placeholder' }, 'Loading Apex27 property results...');
+				}
+
+				if (this.state.error && !this.state.html) {
+					return React.createElement('div', { className: 'divi-apex27-notice divi-apex27-builder-placeholder' }, this.state.error);
+				}
+
+				return React.createElement('div', {
+					className: 'divi-apex27-builder-mode',
+					dangerouslySetInnerHTML: { __html: this.state.html }
+				});
+			}
+		}
+
+		return function edit(props) {
+			const attrs = props?.attrs || {};
+			const attrsKey = JSON.stringify(attrs);
+
+			return React.createElement(PropertyFilterPreview, { attrs, attrsKey });
+		};
+	}
+
 	function createSearchFormPreviewRenderer(React) {
 		const createField = (label, placeholder, key) => React.createElement(
 			'label',
@@ -211,7 +303,8 @@
 			{
 				flag: 'diviApex27PropertyFilterRegistered',
 				metadata: window.diviApex27PropertyFilterMetadata || null,
-				loadingText: 'Loading Apex27 property results...'
+				loadingText: 'Loading Apex27 property results...',
+				createRenderer: createPropertyFilterPreviewRenderer
 			},
 			{
 				flag: 'diviApex27PropertySearchFormRegistered',

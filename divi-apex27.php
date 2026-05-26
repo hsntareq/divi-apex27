@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.0.55
+ * Version: 1.0.56
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.0.55' );
+define( 'DIVI_APEX27_VERSION', '1.0.56' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -31,6 +31,7 @@ add_action( 'divi_module_library_register_modules', 'divi_apex27_register_module
 add_action( 'init', 'divi_apex27_register_modules', 20 );
 add_action( 'admin_init', 'divi_apex27_register_settings' );
 add_action( 'admin_menu', 'divi_apex27_register_settings_page' );
+add_action( 'wp_ajax_divi_apex27_builder_filter_preview', 'divi_apex27_builder_filter_preview' );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
 
 divi_apex27_boot_property_details();
@@ -366,6 +367,32 @@ function divi_apex27_search_form_render_callback( $attrs, $content, $block, $ele
 			esc_html( $message )
 		);
 	}
+}
+
+/**
+ * Builder preview endpoint for Apex27 property filter module.
+ *
+ * @return void
+ */
+function divi_apex27_builder_filter_preview() {
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Permission denied.', 'divi-apex27' ) ), 403 );
+	}
+
+	$attrs_raw = isset( $_POST['attrs'] ) ? wp_unslash( $_POST['attrs'] ) : '';
+	$attrs     = json_decode( (string) $attrs_raw, true );
+
+	if ( ! is_array( $attrs ) ) {
+		$attrs = array();
+	}
+
+	$html = Divi_Apex27_Renderer::render( Divi_Apex27_Renderer::attrs_to_props( $attrs ) );
+
+	wp_send_json_success(
+		array(
+			'html' => $html,
+		)
+	);
 }
 
 /**
