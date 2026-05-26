@@ -37,6 +37,78 @@
 		return settings?.[key]?.desktop?.value ?? fallbackValue;
 	}
 
+	function toPositiveInt(value, fallbackValue) {
+		const parsed = parseInt(value, 10);
+		if (Number.isNaN(parsed) || parsed < 1) {
+			return fallbackValue;
+		}
+
+		return parsed;
+	}
+
+	function createPropertyFilterPreviewRenderer(React) {
+		const samples = [
+			{ title: '2 Bed Apartment, Romford', price: 'GBP 325,000', subtitle: 'Apartment | Romford', beds: '2 Beds', baths: '1 Bath', status: 'For Sale', blurb: 'Bright two-bedroom apartment with open-plan kitchen and balcony.' },
+			{ title: '3 Bed House, Barking', price: 'GBP 450,000', subtitle: 'House | Barking', beds: '3 Beds', baths: '2 Baths', status: 'For Sale', blurb: 'Family home with private garden and off-street parking.' },
+			{ title: '1 Bed Flat, Ilford', price: 'GBP 1,650 pcm', subtitle: 'Flat | Ilford', beds: '1 Bed', baths: '1 Bath', status: 'To Let', blurb: 'Modern one-bedroom flat near transport and local amenities.' },
+			{ title: '4 Bed Detached, Chigwell', price: 'GBP 895,000', subtitle: 'Detached House | Chigwell', beds: '4 Beds', baths: '3 Baths', status: 'For Sale', blurb: 'Spacious detached property in a quiet residential setting.' },
+			{ title: '2 Bed Maisonette, London', price: 'GBP 2,200 pcm', subtitle: 'Maisonette | London', beds: '2 Beds', baths: '1 Bath', status: 'To Let', blurb: 'Well-presented maisonette with generous living space.' },
+			{ title: '3 Bed End Terrace, Dagenham', price: 'GBP 395,000', subtitle: 'End Terraced House | Dagenham', beds: '3 Beds', baths: '2 Baths', status: 'For Sale', blurb: 'Extended end-terrace with large rear garden.' },
+			{ title: 'Studio Flat, Shoreditch', price: 'GBP 1,450 pcm', subtitle: 'Studio | Shoreditch', beds: 'Studio', baths: '1 Bath', status: 'To Let', blurb: 'Compact studio ideal for city living and easy commuting.' },
+			{ title: 'Commercial Unit, Hounslow', price: 'GBP 42,000 pa', subtitle: 'Commercial | Hounslow', beds: 'N/A', baths: 'N/A', status: 'Commercial', blurb: 'Versatile ground-floor commercial unit on busy high street.' }
+		];
+
+		const createCard = (item, index) => React.createElement(
+			'article',
+			{ className: 'divi-apex27-card', key: `apex27-mock-${index}` },
+			React.createElement(
+				'div',
+				{ className: 'divi-apex27-card-media' },
+				React.createElement('span', { className: 'divi-apex27-card-overlay' }, item.status)
+			),
+			React.createElement(
+				'div',
+				{ className: 'divi-apex27-card-body' },
+				React.createElement('h3', null, item.title),
+				React.createElement('p', { className: 'divi-apex27-card-price' }, item.price),
+				React.createElement('p', { className: 'divi-apex27-card-subtitle' }, item.subtitle),
+				React.createElement(
+					'div',
+					{ className: 'divi-apex27-card-meta' },
+					React.createElement('span', null, item.beds),
+					React.createElement('span', null, item.baths)
+				),
+				React.createElement('p', { className: 'divi-apex27-card-summary' }, item.blurb),
+				React.createElement('span', { className: 'divi-apex27-card-link' }, 'View Details')
+			)
+		);
+
+		return function edit(props) {
+			const settings = props?.attrs?.apex27?.content || {};
+			const title = getSettingValue(settings, 'title', 'Property Results');
+			const listingType = getSettingValue(settings, 'listing_type', 'listings');
+			const type = getSettingValue(settings, 'type', 'rent');
+			const columns = Math.min(6, Math.max(1, toPositiveInt(getSettingValue(settings, 'column_count', '4'), 4)));
+			const rows = Math.min(6, Math.max(1, toPositiveInt(getSettingValue(settings, 'row_count', '2'), 2)));
+			const visibleCount = Math.min(samples.length, columns * rows);
+			const cards = samples.slice(0, visibleCount).map(createCard);
+
+			const contextText = `${listingType === 'valuations' ? 'Valuations' : 'Listings'} | ${type}`;
+
+			return React.createElement(
+				'div',
+				{ className: 'divi-apex27-property-filter divi-apex27-builder-mode' },
+				title ? React.createElement('h2', { className: 'divi-apex27-title' }, title) : null,
+				React.createElement('p', { className: 'divi-apex27-debug' }, `Builder Preview: ${contextText}`),
+				React.createElement(
+					'div',
+					{ className: 'divi-apex27-results', style: { '--apex27-columns': String(columns) } },
+					cards
+				)
+			);
+		};
+	}
+
 	function createSearchFormPreviewRenderer(React) {
 		const createField = (label, placeholder, key) => React.createElement(
 			'label',
@@ -198,7 +270,8 @@
 			{
 				flag: 'diviApex27PropertyFilterRegistered',
 				metadata: window.diviApex27PropertyFilterMetadata || null,
-				loadingText: 'Loading Apex27 property results...'
+				loadingText: 'Loading Apex27 property results...',
+				createRenderer: createPropertyFilterPreviewRenderer
 			},
 			{
 				flag: 'diviApex27PropertySearchFormRegistered',
