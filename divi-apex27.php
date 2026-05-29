@@ -517,28 +517,44 @@ function divi_apex27_shortcode( $atts ) {
 }
 
 /**
- * Resolve the API transaction_type from the valuation module's Type + Valuation Type fields.
+ * Fetch and merge valuation results for both transaction types within a sector.
  *
- * The Portal API has no separate sector param — commercial vs residential is expressed
- * through the transaction_type value itself (commercial_sale / commercial_rent).
+ * Residential fetches sale + rent; Commercial fetches commercial_sale + commercial_rent.
+ * Two API calls are made and their items arrays merged before rendering.
  *
- * @param array $props Module props (modified in place).
+ * @param array $props Module props.
  *
- * @return array
+ * @return array|WP_Error Merged result envelope or WP_Error on total failure.
  */
-function divi_apex27_valuation_resolve_type( array $props ) {
-	$base_type = isset( $props['type'] ) ? sanitize_text_field( $props['type'] ) : 'sale';
-	$sector    = isset( $props['sector'] ) ? sanitize_text_field( $props['sector'] ) : '';
+function divi_apex27_valuation_fetch_merged( array $props ) {
+	$sector = isset( $props['sector'] ) ? sanitize_text_field( $props['sector'] ) : 'residential';
+	$types  = 'commercial' === $sector
+		? array( 'commercial_sale', 'commercial_rent' )
+		: array( 'sale', 'rent' );
 
-	if ( 'commercial' === $sector ) {
-		$props['type'] = ( 'rent' === $base_type ) ? 'commercial_rent' : 'commercial_sale';
-	} else {
-		$props['type'] = ( 'rent' === $base_type ) ? 'rent' : 'sale';
+	$api    = new Divi_Apex27_API();
+	$merged = array();
+	$anchor = null;
+
+	foreach ( $types as $type ) {
+		$call_props           = $props;
+		$call_props['type']   = $type;
+		$call_props['sector'] = '';
+		$query  = Divi_Apex27_Renderer::current_query( $call_props );
+		$result = $api->get_listings( $query );
+		if ( ! is_wp_error( $result ) ) {
+			$merged = array_merge( $merged, Divi_Apex27_Renderer::extract_items( $result ) );
+			if ( null === $anchor ) {
+				$anchor = $result;
+			}
+		}
 	}
 
-	$props['sector'] = '';
+	if ( null === $anchor ) {
+		return new WP_Error( 'apex27_no_results', __( 'No valuation results found.', 'divi-apex27' ) );
+	}
 
-	return $props;
+	return Divi_Apex27_Renderer::replace_items_in_result( $anchor, $merged );
 }
 
 /**
@@ -555,9 +571,9 @@ function divi_apex27_valuation_render_callback( $attrs, $content, $block, $eleme
 	$props = Divi_Apex27_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
 
 	$props['listing_type'] = 'valuations';
-	$props = divi_apex27_valuation_resolve_type( $props );
+	$override_result       = divi_apex27_valuation_fetch_merged( $props );
 
-	$output       = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation' );
+	$output       = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation', $override_result );
 	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
 	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
 
@@ -607,9 +623,9 @@ function divi_apex27_builder_valuation_preview() {
 
 	$props                 = Divi_Apex27_Renderer::attrs_to_props( $attrs );
 	$props['listing_type'] = 'valuations';
-	$props                 = divi_apex27_valuation_resolve_type( $props );
+	$override_result       = divi_apex27_valuation_fetch_merged( $props );
 
-	$html = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation' );
+	$html = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation', $override_result );
 
 	wp_send_json_success(
 		array(

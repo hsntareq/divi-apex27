@@ -61,14 +61,9 @@
                             "value": "valuations"
                         }
                     },
-                    "type": {
-                        "desktop": {
-                            "value": "sale"
-                        }
-                    },
                     "sector": {
                         "desktop": {
-                            "value": ""
+                            "value": "residential"
                         }
                     },
                     "row_count": {
@@ -121,30 +116,6 @@
                             "component": {
                                 "name": "divi/text",
                                 "type": "field"
-                            }
-                        }
-                    },
-                    "type": {
-                        "groupType": "group-item",
-                        "item": {
-                            "groupSlug": "valuationFields",
-                            "attrName": "apex27.content.type",
-                            "priority": 10,
-                            "render": true,
-                            "label": "Type",
-                            "component": {
-                                "name": "divi/select",
-                                "type": "field",
-                                "props": {
-                                    "options": {
-                                        "sale": {
-                                            "label": "Sales"
-                                        },
-                                        "rent": {
-                                            "label": "Lettings"
-                                        }
-                                    }
-                                }
                             }
                         }
                     },

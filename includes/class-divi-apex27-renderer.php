@@ -67,7 +67,7 @@ class Divi_Apex27_Renderer {
 	 *
 	 * @return string
 	 */
-	public static function render( array $props, $module_class = 'divi-apex27-property-filter' ) {
+	public static function render( array $props, $module_class = 'divi-apex27-property-filter', $override_result = null ) {
 		$props = wp_parse_args( $props, self::defaults() );
 		$query = self::current_query( $props );
 		$api   = new Divi_Apex27_API();
@@ -80,7 +80,11 @@ class Divi_Apex27_Renderer {
 		if ( ! $api->is_configured() ) {
 			$output .= self::render_notice( __( 'Configure the Website URL and API Key in Settings > Apex27 before using this module.', 'divi-apex27' ) );
 		} else {
-			$result = $api->get_listings( $query );
+			if ( $override_result !== null ) {
+				$result = $override_result;
+			} else {
+				$result = $api->get_listings( $query );
+			}
 			if ( ! is_wp_error( $result ) ) {
 				$result = self::maybe_enrich_valuations_with_listings( $result, $query, $api );
 			}
@@ -97,7 +101,7 @@ class Divi_Apex27_Renderer {
 	 *
 	 * @return array
 	 */
-	private static function current_query( array $props ) {
+	public static function current_query( array $props ) {
 		$locked_query = isset( $props['locked_query'] ) ? sanitize_text_field( (string) $props['locked_query'] ) : '';
 		$locked_keys  = array();
 
@@ -726,7 +730,7 @@ class Divi_Apex27_Renderer {
 	 *
 	 * @return array
 	 */
-	private static function extract_items( $result ) {
+	public static function extract_items( $result ) {
 		if ( is_array( $result ) ) {
 			if ( isset( $result[0] ) ) {
 				return $result;
@@ -1608,7 +1612,7 @@ class Divi_Apex27_Renderer {
 	 *
 	 * @return mixed
 	 */
-	private static function replace_items_in_result( $result, array $items ) {
+	public static function replace_items_in_result( $result, array $items ) {
 		if ( is_array( $result ) ) {
 			if ( isset( $result[0] ) ) {
 				return $items;
