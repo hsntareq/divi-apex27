@@ -109,6 +109,29 @@
                             }
                         }
                     },
+                    "type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "saleFields",
+                            "attrName": "apex27.content.type",
+                            "priority": 7,
+                            "render": true,
+                            "label": "Listing Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "sale": { "label": "Sales (Residential)" },
+                                        "rent": { "label": "Lettings (Residential)" },
+                                        "land": { "label": "Land" },
+                                        "commercial_sale": { "label": "Sales (Commercial)" },
+                                        "commercial_rent": { "label": "Lettings (Commercial)" }
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "column_count": {
                         "groupType": "group-item",
                         "item": {

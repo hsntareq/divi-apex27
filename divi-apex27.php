@@ -398,13 +398,11 @@ function divi_apex27_search_form_render_callback( $attrs, $content, $block, $ele
 function divi_apex27_for_sale_render_callback( $attrs, $content, $block, $elements ) {
 	$props = Divi_Apex27_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
 
-	// Force backend query to available-for-sale listings only.
+	// Lock listing_type and include_sstc; type comes from builder settings.
 	$props['locked_query'] = 'for_sale_available';
-	$props['listing_type'] = 'listings';
-	$props['type']         = 'sale';
 	$props['include_sstc'] = '0';
 
-	$output       = Divi_Apex27_Renderer::render( $props );
+	$output       = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-for-sale' );
 	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
 	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
 
@@ -480,11 +478,9 @@ function divi_apex27_builder_for_sale_preview() {
 
 	$props                 = Divi_Apex27_Renderer::attrs_to_props( $attrs );
 	$props['locked_query'] = 'for_sale_available';
-	$props['listing_type'] = 'listings';
-	$props['type']         = 'sale';
 	$props['include_sstc'] = '0';
 
-	$html = Divi_Apex27_Renderer::render( $props );
+	$html = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-for-sale' );
 
 	wp_send_json_success(
 		array(

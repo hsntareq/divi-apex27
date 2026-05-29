@@ -67,12 +67,12 @@ class Divi_Apex27_Renderer {
 	 *
 	 * @return string
 	 */
-	public static function render( array $props ) {
+	public static function render( array $props, $module_class = 'divi-apex27-property-filter' ) {
 		$props = wp_parse_args( $props, self::defaults() );
 		$query = self::current_query( $props );
 		$api   = new Divi_Apex27_API();
 		$is_builder_preview = self::is_builder_preview();
-		$wrapper_class      = 'divi-apex27-property-filter' . ( $is_builder_preview ? ' divi-apex27-builder-mode' : '' );
+		$wrapper_class      = $module_class . ( $is_builder_preview ? ' divi-apex27-builder-mode' : '' );
 
 		$output  = sprintf( '<div class="%s">', esc_attr( $wrapper_class ) );
 		$output .= self::render_heading( $props['title'] );
@@ -102,7 +102,7 @@ class Divi_Apex27_Renderer {
 		$locked_keys  = array();
 
 		if ( 'for_sale_available' === $locked_query ) {
-			$locked_keys = array( 'listing_type', 'type', 'include_sstc' );
+			$locked_keys = array( 'listing_type', 'include_sstc' );
 		}
 
 		$aliases = array(
@@ -145,7 +145,6 @@ class Divi_Apex27_Renderer {
 
 		if ( 'for_sale_available' === $locked_query ) {
 			$query['listing_type'] = 'listings';
-			$query['type']         = 'sale';
 			$query['include_sstc'] = '0';
 		}
 
@@ -233,8 +232,10 @@ class Divi_Apex27_Renderer {
 	 */
 	private static function type_options() {
 		return array(
-			'sale'            => __( 'Sales', 'divi-apex27' ),
-			'rent'            => __( 'Lettings', 'divi-apex27' ),
+			'sale'            => __( 'Sales (Residential)', 'divi-apex27' ),
+			'rent'            => __( 'Lettings (Residential)', 'divi-apex27' ),
+			'commercial_sale' => __( 'Sales (Commercial)', 'divi-apex27' ),
+			'commercial_rent' => __( 'Lettings (Commercial)', 'divi-apex27' ),
 			'land'            => __( 'Land', 'divi-apex27' ),
 			'new_homes'       => __( 'New Homes', 'divi-apex27' ),
 			'auctions'        => __( 'Auctions', 'divi-apex27' ),
