@@ -33,6 +33,7 @@ add_action( 'admin_init', 'divi_apex27_register_settings' );
 add_action( 'admin_menu', 'divi_apex27_register_settings_page' );
 add_action( 'wp_ajax_divi_apex27_builder_filter_preview', 'divi_apex27_builder_filter_preview' );
 add_action( 'wp_ajax_divi_apex27_builder_for_sale_preview', 'divi_apex27_builder_for_sale_preview' );
+add_action( 'wp_ajax_divi_apex27_builder_valuation_preview', 'divi_apex27_builder_valuation_preview' );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
 
 divi_apex27_boot_property_details();
@@ -248,6 +249,15 @@ function divi_apex27_enqueue_builder_assets() {
 		);
 	}
 
+	$valuation_metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/property-valuation/module.json' ), true );
+	if ( is_array( $valuation_metadata ) ) {
+		wp_add_inline_script(
+			'divi-apex27-builder',
+			'window.diviApex27PropertyValuationMetadata = ' . wp_json_encode( $valuation_metadata ) . ';',
+			'before'
+		);
+	}
+
 	wp_enqueue_script( 'divi-apex27-builder' );
 	wp_enqueue_style(
 		'divi-apex27-builder',
@@ -293,6 +303,12 @@ function divi_apex27_register_modules() {
 			'path'   => DIVI_APEX27_PATH . 'modules/property-for-sale',
 			'config' => array(
 				'render_callback' => 'divi_apex27_for_sale_render_callback',
+			),
+		),
+		array(
+			'path'   => DIVI_APEX27_PATH . 'modules/property-valuation',
+			'config' => array(
+				'render_callback' => 'divi_apex27_valuation_render_callback',
 			),
 		),
 	);
@@ -498,4 +514,106 @@ function divi_apex27_builder_for_sale_preview() {
  */
 function divi_apex27_shortcode( $atts ) {
 	return Divi_Apex27_Renderer::render( shortcode_atts( Divi_Apex27_Renderer::defaults(), $atts ) );
+}
+
+/**
+ * Resolve the API transaction_type from the valuation module's Type + Valuation Type fields.
+ *
+ * The Portal API has no separate sector param — commercial vs residential is expressed
+ * through the transaction_type value itself (commercial_sale / commercial_rent).
+ *
+ * @param array $props Module props (modified in place).
+ *
+ * @return array
+ */
+function divi_apex27_valuation_resolve_type( array $props ) {
+	$base_type = isset( $props['type'] ) ? sanitize_text_field( $props['type'] ) : 'sale';
+	$sector    = isset( $props['sector'] ) ? sanitize_text_field( $props['sector'] ) : '';
+
+	if ( 'commercial' === $sector ) {
+		$props['type'] = ( 'rent' === $base_type ) ? 'commercial_rent' : 'commercial_sale';
+	} else {
+		$props['type'] = ( 'rent' === $base_type ) ? 'rent' : 'sale';
+	}
+
+	$props['sector'] = '';
+
+	return $props;
+}
+
+/**
+ * Divi 5 property valuation render callback.
+ *
+ * @param array     $attrs    Module attributes.
+ * @param string    $content  Module content.
+ * @param \WP_Block $block    Block object.
+ * @param object    $elements Divi elements object.
+ *
+ * @return string
+ */
+function divi_apex27_valuation_render_callback( $attrs, $content, $block, $elements ) {
+	$props = Divi_Apex27_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
+
+	$props['listing_type'] = 'valuations';
+	$props = divi_apex27_valuation_resolve_type( $props );
+
+	$output       = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation' );
+	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
+	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
+
+	if ( class_exists( 'ET\\Builder\\Packages\\Module\\Module' ) ) {
+		$style_components = '';
+		if ( is_object( $elements ) && method_exists( $elements, 'style_components' ) ) {
+			$style_components = $elements->style_components(
+				array(
+					'attrName' => 'module',
+				)
+			);
+		}
+
+		return ET\Builder\Packages\Module\Module::render(
+			array(
+				'attrs'          => $attrs,
+				'elements'       => $elements,
+				'id'             => $parsed_block['id'] ?? '',
+				'name'           => is_object( $block_type ) && isset( $block_type->name ) ? $block_type->name : 'divi-apex27/property-valuation',
+				'moduleCategory' => is_object( $block_type ) && isset( $block_type->category ) ? $block_type->category : 'module',
+				'orderIndex'     => $parsed_block['orderIndex'] ?? null,
+				'storeInstance'  => $parsed_block['storeInstance'] ?? null,
+				'children'       => $style_components . $output . $content,
+			)
+		);
+	}
+
+	return $output . $content;
+}
+
+/**
+ * Builder preview endpoint for Apex27 property valuation module.
+ *
+ * @return void
+ */
+function divi_apex27_builder_valuation_preview() {
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Permission denied.', 'divi-apex27' ) ), 403 );
+	}
+
+	$attrs_raw = isset( $_POST['attrs'] ) ? wp_unslash( $_POST['attrs'] ) : '';
+	$attrs     = json_decode( (string) $attrs_raw, true );
+
+	if ( ! is_array( $attrs ) ) {
+		$attrs = array();
+	}
+
+	$props                 = Divi_Apex27_Renderer::attrs_to_props( $attrs );
+	$props['listing_type'] = 'valuations';
+	$props                 = divi_apex27_valuation_resolve_type( $props );
+
+	$html = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation' );
+
+	wp_send_json_success(
+		array(
+			'html' => $html,
+		)
+	);
 }

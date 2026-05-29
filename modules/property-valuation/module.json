@@ -1,0 +1,425 @@
+{
+    "name": "divi-apex27/property-valuation",
+    "version": "1.0.0",
+    "apiVersion": 2,
+    "title": "Apex27 Property Valuation",
+    "titles": "Apex27 Property Valuations",
+    "moduleIcon": "divi/module-search",
+    "moduleClassName": "divi-apex27-property-valuation",
+    "moduleOrderClassName": "divi_apex27_property_valuation",
+    "category": "module",
+    "visualBuilderScript": "divi-apex27-builder",
+    "attributes": {
+        "module": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "settings": {
+                "meta": {
+                    "meta": {}
+                },
+                "advanced": {
+                    "html": {},
+                    "link": {},
+                    "text": {},
+                    "loop": {}
+                },
+                "decoration": {
+                    "animation": {},
+                    "attributes": {},
+                    "background": {},
+                    "border": {},
+                    "boxShadow": {},
+                    "conditions": {},
+                    "disabledOn": {},
+                    "filters": {},
+                    "interactions": {},
+                    "overflow": {},
+                    "order": {},
+                    "position": {},
+                    "scroll": {},
+                    "sizing": {},
+                    "spacing": {},
+                    "sticky": {},
+                    "transform": {},
+                    "transition": {},
+                    "zIndex": {}
+                }
+            }
+        },
+        "apex27": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "default": {
+                "content": {
+                    "title": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "listing_type": {
+                        "desktop": {
+                            "value": "valuations"
+                        }
+                    },
+                    "type": {
+                        "desktop": {
+                            "value": "sale"
+                        }
+                    },
+                    "sector": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "row_count": {
+                        "desktop": {
+                            "value": "2"
+                        }
+                    },
+                    "column_count": {
+                        "desktop": {
+                            "value": "4"
+                        }
+                    },
+                    "property_type": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "city": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "sort": {
+                        "desktop": {
+                            "value": "highest_price"
+                        }
+                    },
+                    "show_pagination": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "empty_text": {
+                        "desktop": {
+                            "value": "No valuations found."
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "content": {
+                    "title": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.title",
+                            "priority": 5,
+                            "render": false,
+                            "label": "Title",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.type",
+                            "priority": 10,
+                            "render": true,
+                            "label": "Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "sale": {
+                                            "label": "Sales"
+                                        },
+                                        "rent": {
+                                            "label": "Lettings"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "sector": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.sector",
+                            "priority": 15,
+                            "render": true,
+                            "label": "Valuation Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "residential": {
+                                            "label": "Residential"
+                                        },
+                                        "commercial": {
+                                            "label": "Commercial"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "column_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.column_count",
+                            "priority": 18,
+                            "render": true,
+                            "label": "Columns",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": { "label": "1" },
+                                        "2": { "label": "2" },
+                                        "3": { "label": "3" },
+                                        "4": { "label": "4" },
+                                        "5": { "label": "5" },
+                                        "6": { "label": "6" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "row_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.row_count",
+                            "priority": 19,
+                            "render": true,
+                            "label": "Rows",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": { "label": "1" },
+                                        "2": { "label": "2" },
+                                        "3": { "label": "3" },
+                                        "4": { "label": "4" },
+                                        "5": { "label": "5" },
+                                        "6": { "label": "6" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "show_pagination": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.show_pagination",
+                            "priority": 20,
+                            "render": true,
+                            "label": "Show Pagination",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "property_type": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.property_type",
+                            "priority": 30,
+                            "render": false,
+                            "label": "Property Type",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": { "label": "Property Type" },
+                                        "bungalow": { "label": "Bungalow" },
+                                        "detached_house": { "label": "Detached House" },
+                                        "end_terrace": { "label": "End Terraced House" },
+                                        "flat": { "label": "Flat" },
+                                        "house": { "label": "House" },
+                                        "industrial": { "label": "Industrial" },
+                                        "link_detached": { "label": "Link Detached House" },
+                                        "maisonette": { "label": "Maisonette" },
+                                        "office": { "label": "Office" },
+                                        "restaurant": { "label": "Restaurant" },
+                                        "semi_detached_house": { "label": "Semi-detached House" },
+                                        "studio": { "label": "Studio" },
+                                        "terraced": { "label": "Terraced House" },
+                                        "warehouse": { "label": "Warehouse" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "city": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.city",
+                            "priority": 60,
+                            "render": false,
+                            "label": "Location",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": { "label": "Location" },
+                                        "Barking": { "label": "Barking" },
+                                        "Chigwell": { "label": "Chigwell" },
+                                        "Dagenham": { "label": "Dagenham" },
+                                        "Dartford": { "label": "Dartford" },
+                                        "Grays": { "label": "Grays" },
+                                        "Hornchurch": { "label": "Hornchurch" },
+                                        "Hounslow": { "label": "Hounslow" },
+                                        "Ilford": { "label": "Ilford" },
+                                        "leyton": { "label": "leyton" },
+                                        "London": { "label": "London" },
+                                        "Rainham": { "label": "Rainham" },
+                                        "Romford": { "label": "Romford" },
+                                        "Shoreditch": { "label": "Shoreditch" },
+                                        "Southend-On-Sea": { "label": "Southend-On-Sea" },
+                                        "Tilbury": { "label": "Tilbury" },
+                                        "Woodford Green": { "label": "Woodford Green" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "min_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.min_beds",
+                            "priority": 70,
+                            "render": false,
+                            "label": "Min. Bedrooms",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": { "label": "Min. Bedrooms" },
+                                        "1": { "label": "At least 1 beds" },
+                                        "2": { "label": "At least 2 beds" },
+                                        "3": { "label": "At least 3 beds" },
+                                        "4": { "label": "At least 4 beds" },
+                                        "5": { "label": "At least 5 beds" },
+                                        "6": { "label": "At least 6 beds" },
+                                        "7": { "label": "At least 7 beds" },
+                                        "8": { "label": "At least 8 beds" },
+                                        "9": { "label": "At least 9 beds" },
+                                        "10": { "label": "At least 10 beds" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "max_beds": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.max_beds",
+                            "priority": 80,
+                            "render": false,
+                            "label": "Max. Bedrooms",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "": { "label": "Max. Bedrooms" },
+                                        "1": { "label": "At most 1 beds" },
+                                        "2": { "label": "At most 2 beds" },
+                                        "3": { "label": "At most 3 beds" },
+                                        "4": { "label": "At most 4 beds" },
+                                        "5": { "label": "At most 5 beds" },
+                                        "6": { "label": "At most 6 beds" },
+                                        "7": { "label": "At most 7 beds" },
+                                        "8": { "label": "At most 8 beds" },
+                                        "9": { "label": "At most 9 beds" },
+                                        "10": { "label": "At most 10 beds" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "sort": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.sort",
+                            "priority": 90,
+                            "render": false,
+                            "label": "Sort",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "featured": { "label": "Featured first" },
+                                        "highest_price": { "label": "Highest price first" },
+                                        "lowest_price": { "label": "Lowest price first" },
+                                        "newly_instructed": { "label": "Newly instructed first" },
+                                        "newest": { "label": "Newest first" },
+                                        "oldest": { "label": "Oldest first" },
+                                        "nearest": { "label": "Nearest first" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "empty_text": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "valuationFields",
+                            "attrName": "apex27.content.empty_text",
+                            "priority": 100,
+                            "render": false,
+                            "label": "Empty Text",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "customCssFields": {},
+    "settings": {
+        "content": "auto",
+        "design": "auto",
+        "advanced": "auto",
+        "groups": {
+            "valuationFields": {
+                "panel": "content",
+                "priority": 10,
+                "groupName": "mainContent",
+                "component": {
+                    "name": "divi/composite",
+                    "props": {
+                        "groupLabel": "Valuation"
+                    }
+                }
+            }
+        }
+    }
+}

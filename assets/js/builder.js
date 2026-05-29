@@ -391,6 +391,16 @@
 					loadingText: 'Loading Apex27 available for sale properties...',
 					updatingText: 'Updating available for sale properties...'
 				})
+			},
+			{
+				flag: 'diviApex27PropertyValuationRegistered',
+				metadata: window.diviApex27PropertyValuationMetadata || null,
+				loadingText: 'Loading Apex27 property valuations...',
+				createRenderer: (React) => createPropertyFilterPreviewRenderer(React, {
+					action: 'divi_apex27_builder_valuation_preview',
+					loadingText: 'Loading Apex27 property valuations...',
+					updatingText: 'Updating property valuations...'
+				})
 			}
 		];
 
