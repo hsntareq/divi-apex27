@@ -219,10 +219,10 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		}
 
 		// Ensure it's a Google Maps URL
-		if ( ! preg_match( '/google\.com\/maps|goo\.gl\/maps/i', $business_url ) ) {
+		if ( ! preg_match( '/maps\.app\.goo\.gl|google\.com.*maps|goo\.gl.*maps/i', $business_url ) ) {
 			return new WP_Error(
 				'invalid_url_format',
-				__( 'Please provide a valid Google Maps or Google Business URL.', 'divi-apex27' )
+				__( 'Please provide a valid Google Maps or Google Business URL (e.g., https://maps.app.goo.gl/xxxxx or https://www.google.com/maps/place/...)', 'divi-apex27' )
 			);
 		}
 
