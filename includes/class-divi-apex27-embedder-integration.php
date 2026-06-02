@@ -18,15 +18,26 @@ class Divi_Apex27_Embedder_Integration {
 	 * Initialize integration.
 	 */
 	public static function init() {
+		// Enqueue builder JavaScript for search functionality
+		add_action( 'divi_visual_builder_assets_before_enqueue_scripts', array( __CLASS__, 'enqueue_builder_assets' ) );
+
 		// Search for businesses via Embedder API
 		add_action( 'wp_ajax_divi_apex27_search_business', array( __CLASS__, 'search_business' ) );
+		add_action( 'wp_ajax_nopriv_divi_apex27_search_business', array( __CLASS__, 'search_business' ) );
 
 		// Get reviews from Embedder
 		add_action( 'wp_ajax_divi_apex27_get_embedder_reviews', array( __CLASS__, 'get_embedder_reviews' ) );
+		add_action( 'wp_ajax_nopriv_divi_apex27_get_embedder_reviews', array( __CLASS__, 'get_embedder_reviews' ) );
 	}
 
 	/**
-	 * Check if Embedder plugin is active.
+	 * Enqueue builder assets for business search.
+	 */
+	public static function enqueue_builder_assets() {
+		wp_localize_script( 'divi-apex27-builder', 'diviApex27EmbedderSettings', array(
+			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+			'searchNonce' => wp_create_nonce( 'divi_apex27_search_nonce' ),
+		) );
 	 *
 	 * @return bool
 	 */
@@ -38,10 +49,13 @@ class Divi_Apex27_Embedder_Integration {
 	 * Search for businesses using Embedder API.
 	 */
 	public static function search_business() {
-		check_ajax_referer( 'divi_apex27_nonce', 'nonce' );
+		// Verify nonce - allow both the custom nonce and default WordPress nonce
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( $_POST['_ajax_nonce'] ) : '';
 
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array( 'message' => 'Insufficient permissions' ) );
+		if ( ! wp_verify_nonce( $nonce, 'divi_apex27_search_nonce' ) &&
+		     ! wp_verify_nonce( $ajax_nonce, 'divi_apex27_search_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Security check failed' ) );
 		}
 
 		$search = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
@@ -54,6 +68,9 @@ class Divi_Apex27_Embedder_Integration {
 		// Use Embedder's API to search for businesses
 		if ( self::is_embedder_active() ) {
 			$results = self::call_embedder_search_api( $search, $language );
+			if ( is_wp_error( $results ) ) {
+				wp_send_json_error( array( 'message' => $results->get_error_message() ) );
+			}
 			wp_send_json_success( $results );
 		} else {
 			wp_send_json_error( array( 'message' => 'Embedder for Google Reviews plugin is not active' ) );
@@ -125,7 +142,14 @@ class Divi_Apex27_Embedder_Integration {
 	 * Get reviews from Embedder plugin.
 	 */
 	public static function get_embedder_reviews() {
-		check_ajax_referer( 'divi_apex27_nonce', 'nonce' );
+		// Verify nonce - allow both the custom nonce and default WordPress nonce
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
+		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( $_POST['_ajax_nonce'] ) : '';
+
+		if ( ! wp_verify_nonce( $nonce, 'divi_apex27_search_nonce' ) &&
+		     ! wp_verify_nonce( $ajax_nonce, 'divi_apex27_search_nonce' ) ) {
+			wp_send_json_error( array( 'message' => 'Security check failed' ) );
+		}
 
 		$data_id = isset( $_POST['data_id'] ) ? sanitize_text_field( $_POST['data_id'] ) : '';
 		$business_name = isset( $_POST['business_name'] ) ? sanitize_text_field( $_POST['business_name'] ) : '';
