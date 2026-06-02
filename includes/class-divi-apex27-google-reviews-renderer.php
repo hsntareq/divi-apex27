@@ -208,18 +208,185 @@ class Divi_Apex27_Google_Reviews_Renderer {
 	 * @return array|WP_Error
 	 */
 	private static function fetch_via_business_url( $business_url ) {
-		$business_id = self::extract_business_id_from_url( $business_url );
+		// Fetch the HTML from Google Business URL
+		$response = wp_remote_get(
+			$business_url,
+			array(
+				'timeout'     => 15,
+				'redirection' => 5,
+				'httpversion' => '1.1',
+				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+				'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
+			)
+		);
 
-		if ( ! $business_id ) {
+		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
-				'invalid_url',
-				__( 'Could not extract business ID from the provided URL.', 'divi-apex27' )
+				'fetch_failed',
+				sprintf( __( 'Could not fetch Google Business page: %s', 'divi-apex27' ), $response->get_error_message() )
 			);
 		}
 
-		// This would require server-side scraping or integration with a Google API
-		// For now, returning a placeholder
-		return array();
+		$html = wp_remote_retrieve_body( $response );
+		if ( empty( $html ) ) {
+			return new WP_Error(
+				'empty_response',
+				__( 'Google Business page returned empty content.', 'divi-apex27' )
+			);
+		}
+
+		// Try to extract reviews from JSON-LD structured data
+		$reviews = self::extract_reviews_from_json_ld( $html );
+
+		if ( ! empty( $reviews ) ) {
+			return $reviews;
+		}
+
+		// Fallback: Try to extract from the page HTML directly
+		$reviews = self::extract_reviews_from_html( $html );
+
+		return ! empty( $reviews ) ? $reviews : new WP_Error(
+			'no_reviews_found',
+			__( 'Could not find reviews on the Google Business page.', 'divi-apex27' )
+		);
+	}
+
+	/**
+	 * Extract reviews from JSON-LD structured data.
+	 *
+	 * @param string $html HTML content.
+	 *
+	 * @return array
+	 */
+	private static function extract_reviews_from_json_ld( $html ) {
+		$reviews = array();
+
+		// Look for JSON-LD script tags with review data
+		if ( preg_match_all( '/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/is', $html, $matches ) ) {
+			foreach ( $matches[1] as $json_block ) {
+				$data = json_decode( $json_block, true );
+
+				if ( ! is_array( $data ) ) {
+					continue;
+				}
+
+				// Handle different JSON-LD structures
+				if ( 'LocalBusiness' === ( $data['@type'] ?? '' ) || 'Organization' === ( $data['@type'] ?? '' ) ) {
+					if ( ! empty( $data['review'] ) && is_array( $data['review'] ) ) {
+						foreach ( $data['review'] as $review_item ) {
+							$review = self::parse_json_ld_review( $review_item );
+							if ( $review ) {
+								$reviews[] = $review;
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return $reviews;
+	}
+
+	/**
+	 * Parse single JSON-LD review item.
+	 *
+	 * @param array $review_item Review data from JSON-LD.
+	 *
+	 * @return array|false
+	 */
+	private static function parse_json_ld_review( $review_item ) {
+		if ( ! is_array( $review_item ) ) {
+			return false;
+		}
+
+		$author_name = '';
+		if ( ! empty( $review_item['author'] ) ) {
+			if ( is_array( $review_item['author'] ) ) {
+				$author_name = $review_item['author']['name'] ?? '';
+			} else {
+				$author_name = $review_item['author'];
+			}
+		}
+
+		$rating = 0;
+		if ( ! empty( $review_item['reviewRating'] ) ) {
+			$rating = (int) $review_item['reviewRating']['ratingValue'] ?? 0;
+		}
+
+		$review_text = $review_item['reviewBody'] ?? '';
+		$review_date = $review_item['datePublished'] ?? date( 'Y-m-d' );
+
+		if ( empty( $author_name ) || empty( $review_text ) ) {
+			return false;
+		}
+
+		return array(
+			'author' => sanitize_text_field( $author_name ),
+			'rating' => $rating,
+			'text'   => sanitize_textarea_field( $review_text ),
+			'date'   => sanitize_text_field( $review_date ),
+		);
+	}
+
+	/**
+	 * Extract reviews from HTML content (fallback).
+	 *
+	 * @param string $html HTML content.
+	 *
+	 * @return array
+	 */
+	private static function extract_reviews_from_html( $html ) {
+		$reviews = array();
+
+		// Try to find review elements in the page
+		// This regex looks for common review container patterns
+		if ( preg_match_all(
+			'/<div[^>]*class="[^"]*review[^"]*"[^>]*>(.*?)<\/div>\s*<\/div>/is',
+			$html,
+			$matches,
+			PREG_PATTERN_ORDER
+		) ) {
+			foreach ( $matches[1] as $review_html ) {
+				// Try to extract author name
+				if ( preg_match( '/<span[^>]*class="[^"]*reviewer[^"]*"[^>]*>([^<]+)<\/span>/i', $review_html, $author_match ) ) {
+					$author = trim( $author_match[1] );
+				} else {
+					$author = 'Anonymous';
+				}
+
+				// Try to extract rating
+				$rating = 0;
+				if ( preg_match( '/(?:rating|stars?)[\s:]*(\d+)/i', $review_html, $rating_match ) ) {
+					$rating = (int) $rating_match[1];
+				} elseif ( preg_match_all( '/★/i', $review_html, $star_match ) ) {
+					$rating = count( $star_match[0] );
+				}
+
+				// Extract review text
+				if ( preg_match( '/<p[^>]*class="[^"]*text[^"]*"[^>]*>([^<]+)<\/p>/i', $review_html, $text_match ) ) {
+					$text = trim( $text_match[1] );
+				} else {
+					preg_match( '/>([^<]{20,})<\//i', $review_html, $text_match );
+					$text = isset( $text_match[1] ) ? trim( $text_match[1] ) : '';
+				}
+
+				if ( ! empty( $text ) ) {
+					$reviews[] = array(
+						'author' => sanitize_text_field( $author ),
+						'rating' => $rating,
+						'text'   => sanitize_textarea_field( $text ),
+						'date'   => date( 'Y-m-d' ),
+					);
+				}
+
+				// Limit to 20 reviews to avoid excessive processing
+				if ( count( $reviews ) >= 20 ) {
+					break;
+				}
+			}
+		}
+
+		return $reviews;
 	}
 
 	/**
