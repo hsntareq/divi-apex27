@@ -151,16 +151,16 @@ class Divi_Apex27_Google_Reviews_Renderer {
 
 		$reviews = array();
 
-		// Attempt to fetch from Google Places API if using API key method
-		if ( 'api_key' === $props['business_input_mode'] && ! empty( $props['api_key'] ) ) {
-			$reviews = self::fetch_via_places_api( $props );
-		}
-		// Attempt to scrape from Google Business Profile URL
-		elseif ( ! empty( $props['business_url'] ) ) {
+		// Priority order:
+		// 1. Business URL (if provided)
+		// 2. API Key (if provided)
+		// 3. Business Name (if provided)
+
+		if ( ! empty( $props['business_url'] ) ) {
 			$reviews = self::fetch_via_business_url( $props['business_url'] );
-		}
-		// Search by business name
-		elseif ( ! empty( $props['business_name'] ) ) {
+		} elseif ( 'api_key' === $props['business_input_mode'] && ! empty( $props['api_key'] ) ) {
+			$reviews = self::fetch_via_places_api( $props );
+		} elseif ( ! empty( $props['business_name'] ) ) {
 			$reviews = self::fetch_via_business_name( $props );
 		}
 
@@ -208,6 +208,24 @@ class Divi_Apex27_Google_Reviews_Renderer {
 	 * @return array|WP_Error
 	 */
 	private static function fetch_via_business_url( $business_url ) {
+		// Validate and sanitize URL
+		$business_url = esc_url_raw( trim( $business_url ) );
+
+		if ( empty( $business_url ) ) {
+			return new WP_Error(
+				'empty_url',
+				__( 'Business URL is empty.', 'divi-apex27' )
+			);
+		}
+
+		// Ensure it's a Google Maps URL
+		if ( ! preg_match( '/google\.com\/maps|goo\.gl\/maps/i', $business_url ) ) {
+			return new WP_Error(
+				'invalid_url_format',
+				__( 'Please provide a valid Google Maps or Google Business URL.', 'divi-apex27' )
+			);
+		}
+
 		// Fetch the HTML from Google Business URL
 		$response = wp_remote_get(
 			$business_url,
@@ -215,7 +233,7 @@ class Divi_Apex27_Google_Reviews_Renderer {
 				'timeout'     => 15,
 				'redirection' => 5,
 				'httpversion' => '1.1',
-				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
 				'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
 			)
 		);
@@ -223,7 +241,21 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		if ( is_wp_error( $response ) ) {
 			return new WP_Error(
 				'fetch_failed',
-				sprintf( __( 'Could not fetch Google Business page: %s', 'divi-apex27' ), $response->get_error_message() )
+				sprintf(
+					__( 'Could not fetch Google Business page. Error: %s', 'divi-apex27' ),
+					$response->get_error_message()
+				)
+			);
+		}
+
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( 200 !== $response_code ) {
+			return new WP_Error(
+				'invalid_response',
+				sprintf(
+					__( 'Google Business page returned status %d. Please verify the URL is correct and accessible.', 'divi-apex27' ),
+					$response_code
+				)
 			);
 		}
 
@@ -247,7 +279,7 @@ class Divi_Apex27_Google_Reviews_Renderer {
 
 		return ! empty( $reviews ) ? $reviews : new WP_Error(
 			'no_reviews_found',
-			__( 'Could not find reviews on the Google Business page.', 'divi-apex27' )
+			__( 'Could not find reviews on the Google Business page. Make sure the business has reviews and the URL is correct.', 'divi-apex27' )
 		);
 	}
 
@@ -400,43 +432,6 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		// This would require integration with Google Places API or similar
 		// For now, returning a placeholder
 		return array();
-	}
-
-	/**
-	 * Extract business ID from Google Business URL.
-	 *
-	 * @param string $url Business URL.
-	 *
-	 * @return string|false
-	 */
-	private static function extract_business_id_from_url( $url ) {
-		// Google Business URLs typically follow patterns like:
-		// https://www.google.com/maps/place/Business+Name/@latitude,longitude,zoom,data=xxx
-		// https://goo.gl/maps/xxxxx
-		// https://maps.google.com/?cid=xxxxx
-
-		$parsed = wp_parse_url( $url );
-
-		if ( ! $parsed ) {
-			return false;
-		}
-
-		// Try to extract from cid parameter
-		if ( ! empty( $parsed['query'] ) ) {
-			$query_params = wp_parse_args( wp_parse_url( $url, PHP_URL_QUERY ) );
-			if ( ! empty( $query_params['cid'] ) ) {
-				return sanitize_text_field( $query_params['cid'] );
-			}
-		}
-
-		// Try to extract from path
-		if ( ! empty( $parsed['path'] ) ) {
-			if ( preg_match( '/place\/[^@]+@[^,]+,[^,]+,.*?data=([^&]+)/', $url, $matches ) ) {
-				return sanitize_text_field( $matches[1] );
-			}
-		}
-
-		return false;
 	}
 
 	/**
