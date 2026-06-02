@@ -332,6 +332,3 @@ class Divi_Apex27_Embedder_Integration {
 		);
 	}
 }
-
-// Initialize
-Divi_Apex27_Embedder_Integration::init();

@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Divi Apex27
  * Description: Divi module for rendering Apex27 property search results using the existing Apex27 API settings.
- * Version: 1.1.4
+ * Version: 1.1.5
  * Author: Hasan Tareq
  * Text Domain: divi-apex27
  * Requires PHP: 7.4
@@ -12,7 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'DIVI_APEX27_VERSION', '1.1.4' );
+define( 'DIVI_APEX27_VERSION', '1.1.5' );
 define( 'DIVI_APEX27_PATH', plugin_dir_path( __FILE__ ) );
 define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 
@@ -25,6 +25,9 @@ require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-embedder-integration
 
 register_activation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_deactivation' ) );
+
+// Initialize Embedder integration
+add_action( 'plugins_loaded', array( 'Divi_Apex27_Embedder_Integration', 'init' ) );
 
 add_action( 'wp_enqueue_scripts', 'divi_apex27_enqueue_assets' );
 add_action( 'divi_visual_builder_assets_before_enqueue_scripts', 'divi_apex27_enqueue_builder_assets' );
