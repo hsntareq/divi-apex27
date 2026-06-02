@@ -411,12 +411,13 @@
 				loadingText: 'Loading Google Reviews...',
 				updatingText: 'Updating Google Reviews...'
 			})
-		return anyRegistered;
-	}
+		}
+	];
 
-	if (hooks) {
-		hooks.addAction('divi.moduleLibrary.registerModuleLibraryStore.after', 'divi-apex27/property-filter', registerModules);
-	}
+	let anyRegistered = false;
+	definitions.forEach((definition) => {
+		const registered = registerModule(definition);
+		anyRegistered = anyRegistered || registered;
+	});
 
-	setTimeout(registerModules, 1500);
-})();
+	return anyRegistered;
