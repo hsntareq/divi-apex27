@@ -183,6 +183,12 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		// Sort reviews
 		$reviews = self::sort_reviews( $reviews, $props['review_sort'] );
 
+		// Ensure we have an array of reviews
+		if ( ! is_array( $reviews ) ) {
+			error_log( 'Reviews is not an array: ' . gettype( $reviews ) . ' - ' . json_encode( $reviews ) );
+			return new WP_Error( 'invalid_reviews', 'Invalid reviews format' );
+		}
+
 		// Limit reviews to max_reviews
 		$reviews = array_slice( $reviews, 0, (int) $props['max_reviews'] );
 
@@ -549,7 +555,9 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		$output = sprintf( '<div class="%s">', esc_attr( $grid_class ) );
 
 		foreach ( $reviews as $review ) {
-			$output .= self::render_review_card( $review, $props );
+			if ( is_array( $review ) ) {
+				$output .= self::render_review_card( $review, $props );
+			}
 		}
 
 		$output .= '</div>';

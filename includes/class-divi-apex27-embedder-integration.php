@@ -175,24 +175,47 @@ class Divi_Apex27_Embedder_Integration {
 	}
 
 	/**
-	 * Search for a business in Embedder.
+	 * Search for a business in Embedder and fetch its reviews.
 	 *
 	 * @param string $business_name Business name to search for.
 	 *
-	 * @return array|WP_Error
+	 * @return array|WP_Error Array of reviews or WP_Error.
 	 */
 	public static function search_embedder_business( $business_name ) {
 		if ( ! self::is_embedder_active() ) {
 			return new WP_Error( 'not_active', 'Embedder plugin is not active' );
 		}
 
-		$results = self::call_embedder_search_api( $business_name, 'en' );
+		// Step 1: Search for the business
+		$search_results = self::call_embedder_search_api( $business_name, 'en' );
 
-		if ( is_wp_error( $results ) ) {
-			return $results;
+		if ( is_wp_error( $search_results ) ) {
+			return $search_results;
 		}
 
-		return $results;
+		if ( empty( $search_results ) || ! is_array( $search_results ) ) {
+			return new WP_Error( 'no_results', 'No businesses found matching: ' . $business_name );
+		}
+
+		// Step 2: Extract data_id from first result
+		$first_result = is_array( $search_results ) ? reset( $search_results ) : null;
+
+		if ( ! $first_result ) {
+			return new WP_Error( 'no_results', 'No businesses found matching: ' . $business_name );
+		}
+
+		// Get data_id - different APIs may use different field names
+		$data_id = $first_result['data_id'] ?? $first_result['id'] ?? $first_result['serp_data_id'] ?? null;
+
+		if ( ! $data_id ) {
+			error_log( 'Embedder search result: ' . json_encode( $first_result ) );
+			return new WP_Error( 'no_data_id', 'Could not find data_id in search results' );
+		}
+
+		// Step 3: Fetch reviews for this business
+		$reviews = self::fetch_reviews_from_embedder( $data_id );
+
+		return $reviews;
 	}
 
 	/**
@@ -272,6 +295,20 @@ class Divi_Apex27_Embedder_Integration {
 	public static function parse_embedder_reviews( $response ) {
 		$reviews = array();
 
+		// If response itself is the reviews array, handle it
+		if ( is_array( $response ) && isset( $response[0] ) && is_array( $response[0] ) ) {
+			// Check if first item looks like a review
+			if ( isset( $response[0]['reviewer'] ) || isset( $response[0]['author'] ) || isset( $response[0]['rating'] ) ) {
+				foreach ( $response as $item ) {
+					$review = self::parse_single_embedder_review( $item );
+					if ( $review ) {
+						$reviews[] = $review;
+					}
+				}
+				return $reviews;
+			}
+		}
+
 		// Embedder returns reviews in various formats, check for different keys
 		$review_keys = array( 'reviews', 'data', 'results', 'items' );
 
@@ -283,8 +320,13 @@ class Divi_Apex27_Embedder_Integration {
 						$reviews[] = $review;
 					}
 				}
-				break;
+				return $reviews;
 			}
+		}
+
+		// If we have no reviews, log the response for debugging
+		if ( empty( $reviews ) ) {
+			error_log( 'No reviews found in Embedder response: ' . json_encode( $response ) );
 		}
 
 		return $reviews;
