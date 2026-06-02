@@ -171,11 +171,14 @@
                             "groupSlug": "businessConfig",
                             "attrName": "apex27.content.business_url",
                             "priority": 15,
-                            "render": true,
+                            "render": {"dependsOn": "apex27.content.business_input_mode", "value": "url"},
                             "label": "Google Business URL",
                             "component": {
                                 "name": "divi/text",
-                                "type": "field"
+                                "type": "field",
+                                "props": {
+                                    "placeholder": "e.g., https://maps.app.goo.gl/8aKnG14tSw2N2xmMA"
+                                }
                             }
                         }
                     },
@@ -185,11 +188,14 @@
                             "groupSlug": "businessConfig",
                             "attrName": "apex27.content.business_name",
                             "priority": 16,
-                            "render": true,
+                            "render": {"dependsOn": "apex27.content.business_input_mode", "value": "name"},
                             "label": "Business Name",
                             "component": {
                                 "name": "divi/text",
-                                "type": "field"
+                                "type": "field",
+                                "props": {
+                                    "placeholder": "e.g., Starbucks, Pizza Hut"
+                                }
                             }
                         }
                     },
@@ -199,11 +205,14 @@
                             "groupSlug": "businessConfig",
                             "attrName": "apex27.content.api_key",
                             "priority": 17,
-                            "render": true,
+                            "render": {"dependsOn": "apex27.content.business_input_mode", "value": "api_key"},
                             "label": "Google Places API Key",
                             "component": {
                                 "name": "divi/text",
-                                "type": "field"
+                                "type": "field",
+                                "props": {
+                                    "placeholder": "Your Google Places API key"
+                                }
                             }
                         }
                     },

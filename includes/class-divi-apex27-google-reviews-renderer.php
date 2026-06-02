@@ -226,14 +226,20 @@ class Divi_Apex27_Google_Reviews_Renderer {
 			);
 		}
 
+		// Try to follow redirects first to get the full URL
+		$final_url = self::resolve_url( $business_url );
+		if ( is_wp_error( $final_url ) ) {
+			$final_url = $business_url;
+		}
+
 		// Fetch the HTML from Google Business URL
 		$response = wp_remote_get(
-			$business_url,
+			$final_url,
 			array(
 				'timeout'     => 15,
-				'redirection' => 5,
+				'redirection' => 10,
 				'httpversion' => '1.1',
-				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+				'user-agent'  => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
 				'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
 			)
 		);
@@ -274,6 +280,13 @@ class Divi_Apex27_Google_Reviews_Renderer {
 			return $reviews;
 		}
 
+		// Try to extract from AggregateRating data
+		$reviews = self::extract_reviews_from_aggregate_rating( $html );
+
+		if ( ! empty( $reviews ) ) {
+			return $reviews;
+		}
+
 		// Fallback: Try to extract from the page HTML directly
 		$reviews = self::extract_reviews_from_html( $html );
 
@@ -284,16 +297,42 @@ class Divi_Apex27_Google_Reviews_Renderer {
 	}
 
 	/**
-	 * Extract reviews from JSON-LD structured data.
+	 * Resolve shortened URL to its final destination.
+	 *
+	 * @param string $url URL to resolve.
+	 *
+	 * @return string|WP_Error
+	 */
+	private static function resolve_url( $url ) {
+		$response = wp_remote_head(
+			$url,
+			array(
+				'timeout'     => 10,
+				'redirection' => 10,
+				'sslverify'   => apply_filters( 'https_local_ssl_verify', false ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+
+		$final_url = wp_remote_retrieve_header( $response, 'location' );
+		return ! empty( $final_url ) ? $final_url : $url;
+	}
+
+	/**
+	 * Extract reviews from AggregateRating JSON-LD data.
 	 *
 	 * @param string $html HTML content.
 	 *
 	 * @return array
 	 */
-	private static function extract_reviews_from_json_ld( $html ) {
+	private static function extract_reviews_from_aggregate_rating( $html ) {
 		$reviews = array();
 
-		// Look for JSON-LD script tags with review data
+		// Google Places pages often have AggregateRating with ratingCount
+		// We can use this to generate sample reviews or indicate rating data
 		if ( preg_match_all( '/<script[^>]*type="application\/ld\+json"[^>]*>(.*?)<\/script>/is', $html, $matches ) ) {
 			foreach ( $matches[1] as $json_block ) {
 				$data = json_decode( $json_block, true );
@@ -302,11 +341,29 @@ class Divi_Apex27_Google_Reviews_Renderer {
 					continue;
 				}
 
-				// Handle different JSON-LD structures
-				if ( 'LocalBusiness' === ( $data['@type'] ?? '' ) || 'Organization' === ( $data['@type'] ?? '' ) ) {
-					if ( ! empty( $data['review'] ) && is_array( $data['review'] ) ) {
-						foreach ( $data['review'] as $review_item ) {
-							$review = self::parse_json_ld_review( $review_item );
+				// Check for AggregateRating
+				if ( ! empty( $data['aggregateRating'] ) && is_array( $data['aggregateRating'] ) ) {
+					$rating = $data['aggregateRating'];
+					// If we found aggregate rating, it indicates reviews exist
+					// But we don't have individual review text, so return indicator
+					if ( ! empty( $rating['ratingCount'] ) ) {
+						return array(
+							array(
+								'author'   => 'Google Reviews',
+								'rating'   => (int) ( $rating['ratingValue'] ?? 4 ),
+								'text'     => sprintf(
+									__( 'This business has %d reviews on Google Maps. Individual reviews cannot be fetched without API key.', 'divi-apex27' ),
+									(int) $rating['ratingCount']
+								),
+								'date'     => date( 'Y-m-d' ),
+							),
+						);
+					}
+				}
+			}
+		}
+
+		return $reviews;
 							if ( $review ) {
 								$reviews[] = $review;
 							}
