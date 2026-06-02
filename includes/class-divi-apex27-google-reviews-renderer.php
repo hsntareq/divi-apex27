@@ -364,16 +364,6 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		}
 
 		return $reviews;
-							if ( $review ) {
-								$reviews[] = $review;
-							}
-						}
-					}
-				}
-			}
-		}
-
-		return $reviews;
 	}
 
 	/**
