@@ -421,3 +421,11 @@
 	});
 
 	return anyRegistered;
+	}
+
+	if (hooks) {
+		hooks.addAction('divi.moduleLibrary.registerModuleLibraryStore.after', 'divi-apex27/property-filter', registerModules);
+	}
+
+	setTimeout(registerModules, 1500);
+})();
