@@ -247,7 +247,7 @@ class Divi_Apex27_Embedder_Integration {
 	 */
 	public static function fetch_reviews_from_embedder( $data_id ) {
 		error_log( 'fetch_reviews_from_embedder called with data_id: ' . $data_id );
-		
+
 		// Get Embedder install ID
 		if ( function_exists( 'grwp_fs' ) && grwp_fs()->get_site() ) {
 			$install_id = grwp_fs()->get_site()->id;

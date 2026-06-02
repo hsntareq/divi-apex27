@@ -165,7 +165,7 @@ class Divi_Apex27_Google_Reviews_Renderer {
 
 		// Priority order:
 		// 1. Embedder (if selected)
-		// 2. Business URL (if provided)
+		// 2. Business URL (if provided - as fallback or primary)
 		// 3. API Key (if provided)
 		// 4. Business Name (if provided)
 
@@ -176,6 +176,12 @@ class Divi_Apex27_Google_Reviews_Renderer {
 				error_log( 'Divi_Apex27_Embedder_Integration class exists' );
 				$reviews = Divi_Apex27_Embedder_Integration::search_embedder_business( $props['embedder_business_id'] );
 				error_log( 'Result from search_embedder_business: ' . json_encode( $reviews ) );
+
+				// If Embedder fails (rate limit, etc), fall back to URL if available
+				if ( is_wp_error( $reviews ) && ! empty( $props['business_url'] ) ) {
+					error_log( 'Embedder failed, falling back to URL method: ' . $reviews->get_error_message() );
+					$reviews = self::fetch_via_business_url( $props['business_url'] );
+				}
 			} else {
 				error_log( 'Divi_Apex27_Embedder_Integration class does NOT exist' );
 			}
@@ -196,9 +202,17 @@ class Divi_Apex27_Google_Reviews_Renderer {
 
 		if ( is_wp_error( $reviews ) || empty( $reviews ) ) {
 			error_log( 'No reviews found or error. Returning error message' );
+			$error_message = $props['empty_text'];
+
+			// If it's a WP_Error, use that message instead
+			if ( is_wp_error( $reviews ) ) {
+				error_log( 'Error details: ' . $reviews->get_error_message() );
+				$error_message = $reviews->get_error_message();
+			}
+
 			return new WP_Error(
 				'no_reviews',
-				$props['empty_text']
+				$error_message
 			);
 		}
 
@@ -407,8 +421,45 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		return $reviews;
 	}
 
-	/**
-	 * Parse single JSON-LD review item.
+	/**	 * Extract reviews from JSON-LD structured data in HTML.
+	 *
+	 * @param string $html HTML content.
+	 *
+	 * @return array
+	 */
+	private static function extract_reviews_from_json_ld( $html ) {
+		$reviews = array();
+
+		// Look for JSON-LD script tags
+		if ( preg_match_all( '/<script[^>]+type=["\']application\/ld\+json["\'][^>]*>(.*?)<\/script>/is', $html, $matches ) ) {
+			foreach ( $matches[1] as $json_str ) {
+				$json_data = json_decode( trim( $json_str ), true );
+				if ( ! is_array( $json_data ) ) {
+					continue;
+				}
+
+				// Check if this is a ReviewingSchema with reviews
+				if ( ! empty( $json_data['review'] ) && is_array( $json_data['review'] ) ) {
+					foreach ( $json_data['review'] as $review_item ) {
+						$review = self::parse_json_ld_review( $review_item );
+						if ( $review ) {
+							$reviews[] = $review;
+						}
+					}
+				}
+
+				// Check if this is an AggregateRating schema
+				if ( ! empty( $json_data['aggregateRating'] ) && ! empty( $json_data['aggregateRating']['ratingCount'] ) ) {
+					// This will be handled by extract_reviews_from_aggregate_rating
+					break;
+				}
+			}
+		}
+
+		return $reviews;
+	}
+
+	/**	 * Parse single JSON-LD review item.
 	 *
 	 * @param array $review_item Review data from JSON-LD.
 	 *
