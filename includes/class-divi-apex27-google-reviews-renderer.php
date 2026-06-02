@@ -163,7 +163,7 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		if ( 'embedder' === $props['business_input_mode'] && ! empty( $props['embedder_business_id'] ) ) {
 			// Use Embedder plugin integration
 			if ( class_exists( 'Divi_Apex27_Embedder_Integration' ) ) {
-				$reviews = Divi_Apex27_Embedder_Integration::fetch_reviews_from_embedder( $props['embedder_business_id'] );
+				$reviews = Divi_Apex27_Embedder_Integration::search_embedder_business( $props['embedder_business_id'] );
 			}
 		} elseif ( ! empty( $props['business_url'] ) ) {
 			$reviews = self::fetch_via_business_url( $props['business_url'] );

@@ -53,14 +53,9 @@ class Divi_Apex27_Embedder_Integration {
 	 * Search for businesses using Embedder API.
 	 */
 	public static function search_business() {
-		// Verify nonce - allow both the custom nonce and default WordPress nonce
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( $_POST['_ajax_nonce'] ) : '';
-
-		if ( ! wp_verify_nonce( $nonce, 'divi_apex27_search_nonce' ) &&
-		     ! wp_verify_nonce( $ajax_nonce, 'divi_apex27_search_nonce' ) ) {
-			wp_send_json_error( array( 'message' => 'Security check failed' ) );
-		}
+		// Log request for debugging
+		error_log( 'Divi Apex27: Search business called' );
+		error_log( 'POST data: ' . json_encode( $_POST ) );
 
 		$search = isset( $_POST['search'] ) ? sanitize_text_field( $_POST['search'] ) : '';
 		$language = isset( $_POST['language'] ) ? sanitize_text_field( $_POST['language'] ) : 'en';
@@ -69,15 +64,25 @@ class Divi_Apex27_Embedder_Integration {
 			wp_send_json_error( array( 'message' => 'Please enter a search term' ) );
 		}
 
-		// Use Embedder's API to search for businesses
-		if ( self::is_embedder_active() ) {
+		// Check if Embedder is active
+		if ( ! self::is_embedder_active() ) {
+			wp_send_json_error( array( 'message' => 'Embedder for Google Reviews plugin is not active' ) );
+		}
+
+		// Call Embedder API
+		try {
 			$results = self::call_embedder_search_api( $search, $language );
+
 			if ( is_wp_error( $results ) ) {
+				error_log( 'Embedder API error: ' . $results->get_error_message() );
 				wp_send_json_error( array( 'message' => $results->get_error_message() ) );
 			}
+
+			error_log( 'Search results: ' . json_encode( $results ) );
 			wp_send_json_success( $results );
-		} else {
-			wp_send_json_error( array( 'message' => 'Embedder for Google Reviews plugin is not active' ) );
+		} catch ( Exception $e ) {
+			error_log( 'Search business exception: ' . $e->getMessage() );
+			wp_send_json_error( array( 'message' => 'Error: ' . $e->getMessage() ) );
 		}
 	}
 
@@ -146,33 +151,48 @@ class Divi_Apex27_Embedder_Integration {
 	 * Get reviews from Embedder plugin.
 	 */
 	public static function get_embedder_reviews() {
-		// Verify nonce - allow both the custom nonce and default WordPress nonce
-		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( $_POST['nonce'] ) : '';
-		$ajax_nonce = isset( $_POST['_ajax_nonce'] ) ? sanitize_text_field( $_POST['_ajax_nonce'] ) : '';
-
-		if ( ! wp_verify_nonce( $nonce, 'divi_apex27_search_nonce' ) &&
-		     ! wp_verify_nonce( $ajax_nonce, 'divi_apex27_search_nonce' ) ) {
-			wp_send_json_error( array( 'message' => 'Security check failed' ) );
-		}
-
-		$data_id = isset( $_POST['data_id'] ) ? sanitize_text_field( $_POST['data_id'] ) : '';
 		$business_name = isset( $_POST['business_name'] ) ? sanitize_text_field( $_POST['business_name'] ) : '';
 
-		if ( empty( $data_id ) ) {
-			wp_send_json_error( array( 'message' => 'Business ID is required' ) );
+		if ( empty( $business_name ) ) {
+			wp_send_json_error( array( 'message' => 'Business name is required' ) );
 		}
 
-		$reviews = self::fetch_reviews_from_embedder( $data_id );
+		// Search for the business
+		$results = self::search_embedder_business( $business_name );
 
-		if ( is_wp_error( $reviews ) ) {
-			wp_send_json_error( array( 'message' => $reviews->get_error_message() ) );
+		if ( is_wp_error( $results ) ) {
+			wp_send_json_error( array( 'message' => $results->get_error_message() ) );
+		}
+
+		if ( empty( $results ) ) {
+			wp_send_json_error( array( 'message' => 'Business not found. Make sure it\'s configured in the Embedder plugin.' ) );
 		}
 
 		wp_send_json_success( array(
-			'data_id'       => $data_id,
 			'business_name' => $business_name,
-			'reviews'       => $reviews,
+			'reviews'       => $results,
 		) );
+	}
+
+	/**
+	 * Search for a business in Embedder.
+	 *
+	 * @param string $business_name Business name to search for.
+	 *
+	 * @return array|WP_Error
+	 */
+	public static function search_embedder_business( $business_name ) {
+		if ( ! self::is_embedder_active() ) {
+			return new WP_Error( 'not_active', 'Embedder plugin is not active' );
+		}
+
+		$results = self::call_embedder_search_api( $business_name, 'en' );
+
+		if ( is_wp_error( $results ) ) {
+			return $results;
+		}
+
+		return $results;
 	}
 
 	/**

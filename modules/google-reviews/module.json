@@ -1,6 +1,6 @@
 {
     "name": "divi-apex27/google-reviews",
-    "version": "1.1.3",
+    "version": "1.1.4",
     "apiVersion": 2,
     "title": "Google Reviews",
     "titles": "Google Reviews",
@@ -229,14 +229,12 @@
                             "attrName": "apex27.content.embedder_business_id",
                             "priority": 18,
                             "render": {"dependsOn": "apex27.content.business_input_mode", "value": "embedder"},
-                            "label": "Search Business",
-                            "description": "Search for businesses configured in the Embedder for Google Reviews plugin. Make sure the business is already set up in the Embedder plugin first.",
+                            "label": "Business Name or ID",
                             "component": {
                                 "name": "divi/text",
                                 "type": "field",
                                 "props": {
-                                    "placeholder": "Type business name and select from list...",
-                                    "isSearchable": true
+                                    "placeholder": "Enter the business name exactly as configured in Embedder plugin (e.g., 'Starbucks', 'McDonald's')"
                                 }
                             }
                         }
