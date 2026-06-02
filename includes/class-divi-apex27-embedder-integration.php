@@ -182,38 +182,58 @@ class Divi_Apex27_Embedder_Integration {
 	 * @return array|WP_Error Array of reviews or WP_Error.
 	 */
 	public static function search_embedder_business( $business_name ) {
-		if ( ! self::is_embedder_active() ) {
+		error_log( '=== Divi Apex27 Embedder: search_embedder_business called ===' );
+		error_log( 'Business name: ' . $business_name );
+
+		// Check if Embedder is active
+		$is_active = self::is_embedder_active();
+		error_log( 'is_embedder_active(): ' . ($is_active ? 'true' : 'false') );
+
+		if ( ! $is_active ) {
+			error_log( 'Embedder plugin is not active' );
 			return new WP_Error( 'not_active', 'Embedder plugin is not active' );
 		}
 
 		// Step 1: Search for the business
+		error_log( 'Calling call_embedder_search_api...' );
 		$search_results = self::call_embedder_search_api( $business_name, 'en' );
 
 		if ( is_wp_error( $search_results ) ) {
+			error_log( 'Search API error: ' . $search_results->get_error_message() );
 			return $search_results;
 		}
 
+		error_log( 'Search results: ' . json_encode( $search_results ) );
+
 		if ( empty( $search_results ) || ! is_array( $search_results ) ) {
+			error_log( 'No search results or not an array' );
 			return new WP_Error( 'no_results', 'No businesses found matching: ' . $business_name );
 		}
 
 		// Step 2: Extract data_id from first result
 		$first_result = is_array( $search_results ) ? reset( $search_results ) : null;
+		error_log( 'First result: ' . json_encode( $first_result ) );
 
 		if ( ! $first_result ) {
+			error_log( 'No first result found' );
 			return new WP_Error( 'no_results', 'No businesses found matching: ' . $business_name );
 		}
 
 		// Get data_id - different APIs may use different field names
 		$data_id = $first_result['data_id'] ?? $first_result['id'] ?? $first_result['serp_data_id'] ?? null;
+		error_log( 'Extracted data_id: ' . ($data_id ?: 'null') );
 
 		if ( ! $data_id ) {
-			error_log( 'Embedder search result: ' . json_encode( $first_result ) );
+			error_log( 'Embedder search result (full): ' . json_encode( $first_result ) );
 			return new WP_Error( 'no_data_id', 'Could not find data_id in search results' );
 		}
 
 		// Step 3: Fetch reviews for this business
+		error_log( 'Fetching reviews for data_id: ' . $data_id );
 		$reviews = self::fetch_reviews_from_embedder( $data_id );
+
+		error_log( 'Reviews fetched: ' . json_encode( $reviews ) );
+		error_log( '=== End search_embedder_business ===' );
 
 		return $reviews;
 	}
@@ -226,6 +246,8 @@ class Divi_Apex27_Embedder_Integration {
 	 * @return array|WP_Error
 	 */
 	public static function fetch_reviews_from_embedder( $data_id ) {
+		error_log( 'fetch_reviews_from_embedder called with data_id: ' . $data_id );
+		
 		// Get Embedder install ID
 		if ( function_exists( 'grwp_fs' ) && grwp_fs()->get_site() ) {
 			$install_id = grwp_fs()->get_site()->id;
@@ -233,10 +255,14 @@ class Divi_Apex27_Embedder_Integration {
 			$install_id = '';
 		}
 
+		error_log( 'Embedder install_id: ' . ($install_id ?: 'empty') );
+
 		// Try to get reviews from Embedder's cached option first
 		$embedder_options = get_option( 'google_reviews_option_name' );
 		$stored_data_id = isset( $embedder_options['serp_data_id'] ) ? $embedder_options['serp_data_id'] : '';
 		$language = isset( $embedder_options['reviews_language_3'] ) ? $embedder_options['reviews_language_3'] : 'en';
+
+		error_log( 'Language: ' . $language );
 
 		// Fetch fresh reviews from Embedder's API
 		$site = urlencode( get_site_url() );
@@ -251,21 +277,28 @@ class Divi_Apex27_Embedder_Integration {
 			$admin_email
 		);
 
+		error_log( 'API URL: ' . $license_request_url );
+
 		$response = wp_remote_get(
 			$license_request_url,
 			array( 'timeout' => 30 )
 		);
 
 		if ( is_wp_error( $response ) ) {
+			error_log( 'API call failed: ' . $response->get_error_message() );
 			return new WP_Error(
 				'fetch_failed',
 				sprintf( __( 'Could not fetch reviews: %s', 'divi-apex27' ), $response->get_error_message() )
 			);
 		}
 
-		$body = json_decode( wp_remote_retrieve_body( $response ), true );
+		$response_body = wp_remote_retrieve_body( $response );
+		error_log( 'API response body: ' . substr( $response_body, 0, 500 ) );
+
+		$body = json_decode( $response_body, true );
 
 		if ( ! is_array( $body ) ) {
+			error_log( 'Response is not an array. Type: ' . gettype( $body ) );
 			return new WP_Error(
 				'invalid_response',
 				__( 'Invalid API response', 'divi-apex27' )
@@ -273,6 +306,7 @@ class Divi_Apex27_Embedder_Integration {
 		}
 
 		if ( isset( $body['error'] ) ) {
+			error_log( 'API error: ' . ($body['reason'] ?? 'Unknown error') );
 			return new WP_Error(
 				'api_error',
 				isset( $body['reason'] ) ? $body['reason'] : __( 'Failed to fetch reviews', 'divi-apex27' )
@@ -280,7 +314,10 @@ class Divi_Apex27_Embedder_Integration {
 		}
 
 		// Parse the reviews from the response
+		error_log( 'Parsing reviews...' );
 		$reviews = self::parse_embedder_reviews( $body );
+
+		error_log( 'Parsed reviews count: ' . count( $reviews ) );
 
 		return $reviews;
 	}

@@ -143,12 +143,21 @@ class Divi_Apex27_Google_Reviews_Renderer {
 	 * @return array|WP_Error
 	 */
 	public static function fetch_reviews( array $props ) {
+		error_log( '=== Google Reviews Renderer: fetch_reviews called ===' );
+		error_log( 'Props: ' . json_encode( array(
+			'business_input_mode' => $props['business_input_mode'],
+			'embedder_business_id' => $props['embedder_business_id'],
+			'business_url' => $props['business_url'],
+			'business_name' => $props['business_name'],
+		) ) );
+
 		// Build cache key with all possible identifiers
 		$cache_id = $props['business_url'] . $props['business_name'] . $props['api_key'] . $props['embedder_business_id'];
 		$cache_key = self::GOOGLE_REVIEWS_TRANSIENT_PREFIX . md5( $cache_id );
 		$cached    = get_transient( $cache_key );
 
 		if ( ! empty( $cached ) ) {
+			error_log( 'Using cached reviews' );
 			return $cached;
 		}
 
@@ -161,31 +170,46 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		// 4. Business Name (if provided)
 
 		if ( 'embedder' === $props['business_input_mode'] && ! empty( $props['embedder_business_id'] ) ) {
+			error_log( 'Using Embedder mode with business_id: ' . $props['embedder_business_id'] );
 			// Use Embedder plugin integration
 			if ( class_exists( 'Divi_Apex27_Embedder_Integration' ) ) {
+				error_log( 'Divi_Apex27_Embedder_Integration class exists' );
 				$reviews = Divi_Apex27_Embedder_Integration::search_embedder_business( $props['embedder_business_id'] );
+				error_log( 'Result from search_embedder_business: ' . json_encode( $reviews ) );
+			} else {
+				error_log( 'Divi_Apex27_Embedder_Integration class does NOT exist' );
 			}
 		} elseif ( ! empty( $props['business_url'] ) ) {
+			error_log( 'Using URL mode' );
 			$reviews = self::fetch_via_business_url( $props['business_url'] );
 		} elseif ( 'api_key' === $props['business_input_mode'] && ! empty( $props['api_key'] ) ) {
+			error_log( 'Using API Key mode' );
 			$reviews = self::fetch_via_places_api( $props );
 		} elseif ( ! empty( $props['business_name'] ) ) {
+			error_log( 'Using Business Name mode' );
 			$reviews = self::fetch_via_business_name( $props );
+		} else {
+			error_log( 'No input method found with data' );
 		}
 
+		error_log( 'Reviews before error check: ' . json_encode( $reviews ) );
+
 		if ( is_wp_error( $reviews ) || empty( $reviews ) ) {
+			error_log( 'No reviews found or error. Returning error message' );
 			return new WP_Error(
 				'no_reviews',
 				$props['empty_text']
 			);
 		}
 
+		error_log( 'Found ' . count( $reviews ) . ' reviews' );
+
 		// Sort reviews
 		$reviews = self::sort_reviews( $reviews, $props['review_sort'] );
 
 		// Ensure we have an array of reviews
 		if ( ! is_array( $reviews ) ) {
-			error_log( 'Reviews is not an array: ' . gettype( $reviews ) . ' - ' . json_encode( $reviews ) );
+			error_log( 'Reviews is not an array after sort: ' . gettype( $reviews ) . ' - ' . json_encode( $reviews ) );
 			return new WP_Error( 'invalid_reviews', 'Invalid reviews format' );
 		}
 
@@ -194,6 +218,8 @@ class Divi_Apex27_Google_Reviews_Renderer {
 
 		// Cache the reviews
 		set_transient( $cache_key, $reviews, self::GOOGLE_REVIEWS_CACHE_EXPIRY );
+
+		error_log( '=== End fetch_reviews ===' );
 
 		return $reviews;
 	}
