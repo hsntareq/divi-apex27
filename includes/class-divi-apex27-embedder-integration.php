@@ -38,6 +38,10 @@ class Divi_Apex27_Embedder_Integration {
 			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
 			'searchNonce' => wp_create_nonce( 'divi_apex27_search_nonce' ),
 		) );
+	}
+
+	/**
+	 * Check if Embedder plugin is active.
 	 *
 	 * @return bool
 	 */
