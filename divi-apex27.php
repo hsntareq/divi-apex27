@@ -19,6 +19,7 @@ define( 'DIVI_APEX27_URL', plugin_dir_url( __FILE__ ) );
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-api.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-search-form-renderer.php';
+require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-google-reviews-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-property-details.php';
 
 register_activation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_activation' ) );
@@ -34,6 +35,7 @@ add_action( 'admin_menu', 'divi_apex27_register_settings_page' );
 add_action( 'wp_ajax_divi_apex27_builder_filter_preview', 'divi_apex27_builder_filter_preview' );
 add_action( 'wp_ajax_divi_apex27_builder_for_sale_preview', 'divi_apex27_builder_for_sale_preview' );
 add_action( 'wp_ajax_divi_apex27_builder_valuation_preview', 'divi_apex27_builder_valuation_preview' );
+add_action( 'wp_ajax_divi_apex27_builder_google_reviews_preview', 'divi_apex27_builder_google_reviews_preview' );
 add_shortcode( 'divi_apex27_property_filter', 'divi_apex27_shortcode' );
 
 divi_apex27_boot_property_details();
@@ -258,6 +260,15 @@ function divi_apex27_enqueue_builder_assets() {
 		);
 	}
 
+	$google_reviews_metadata = json_decode( file_get_contents( DIVI_APEX27_PATH . 'modules/google-reviews/module.json' ), true );
+	if ( is_array( $google_reviews_metadata ) ) {
+		wp_add_inline_script(
+			'divi-apex27-builder',
+			'window.diviApex27GoogleReviewsMetadata = ' . wp_json_encode( $google_reviews_metadata ) . ';',
+			'before'
+		);
+	}
+
 	wp_enqueue_script( 'divi-apex27-builder' );
 	wp_enqueue_style(
 		'divi-apex27-builder',
@@ -309,6 +320,12 @@ function divi_apex27_register_modules() {
 			'path'   => DIVI_APEX27_PATH . 'modules/property-valuation',
 			'config' => array(
 				'render_callback' => 'divi_apex27_valuation_render_callback',
+			),
+		),
+		array(
+			'path'   => DIVI_APEX27_PATH . 'modules/google-reviews',
+			'config' => array(
+				'render_callback' => 'divi_apex27_google_reviews_render_callback',
 			),
 		),
 	);
@@ -626,6 +643,77 @@ function divi_apex27_builder_valuation_preview() {
 	$override_result       = divi_apex27_valuation_fetch_merged( $props );
 
 	$html = Divi_Apex27_Renderer::render( $props, 'divi-apex27-property-valuation', $override_result );
+
+	wp_send_json_success(
+		array(
+			'html' => $html,
+		)
+	);
+}
+
+/**
+ * Divi 5 Google Reviews render callback.
+ *
+ * @param array     $attrs    Module attributes.
+ * @param string    $content  Module content.
+ * @param \WP_Block $block   Block object.
+ * @param object    $elements Divi elements object.
+ *
+ * @return string
+ */
+function divi_apex27_google_reviews_render_callback( $attrs, $content, $block, $elements ) {
+	$props  = Divi_Apex27_Google_Reviews_Renderer::attrs_to_props( is_array( $attrs ) ? $attrs : array() );
+	$output = Divi_Apex27_Google_Reviews_Renderer::render( $props );
+
+	$parsed_block = ( is_object( $block ) && isset( $block->parsed_block ) && is_array( $block->parsed_block ) ) ? $block->parsed_block : array();
+	$block_type   = ( is_object( $block ) && isset( $block->block_type ) && is_object( $block->block_type ) ) ? $block->block_type : null;
+
+	if ( class_exists( 'ET\\Builder\\Packages\\Module\\Module' ) ) {
+		$style_components = '';
+		if ( is_object( $elements ) && method_exists( $elements, 'style_components' ) ) {
+			$style_components = $elements->style_components(
+				array(
+					'attrName' => 'module',
+				)
+			);
+		}
+
+		return ET\Builder\Packages\Module\Module::render(
+			array(
+				'attrs'          => $attrs,
+				'elements'       => $elements,
+				'id'             => $parsed_block['id'] ?? '',
+				'name'           => is_object( $block_type ) && isset( $block_type->name ) ? $block_type->name : 'divi-apex27/google-reviews',
+				'moduleCategory' => is_object( $block_type ) && isset( $block_type->category ) ? $block_type->category : 'module',
+				'orderIndex'     => $parsed_block['orderIndex'] ?? null,
+				'storeInstance'  => $parsed_block['storeInstance'] ?? null,
+				'children'       => $style_components . $output . $content,
+			)
+		);
+	}
+
+	return $output . $content;
+}
+
+/**
+ * Builder preview endpoint for Google Reviews module.
+ *
+ * @return void
+ */
+function divi_apex27_builder_google_reviews_preview() {
+	if ( ! current_user_can( 'edit_posts' ) ) {
+		wp_send_json_error( array( 'message' => __( 'Permission denied.', 'divi-apex27' ) ), 403 );
+	}
+
+	$attrs_raw = isset( $_POST['attrs'] ) ? wp_unslash( $_POST['attrs'] ) : '';
+	$attrs     = json_decode( (string) $attrs_raw, true );
+
+	if ( ! is_array( $attrs ) ) {
+		$attrs = array();
+	}
+
+	$props = Divi_Apex27_Google_Reviews_Renderer::attrs_to_props( $attrs );
+	$html  = Divi_Apex27_Google_Reviews_Renderer::render( $props );
 
 	wp_send_json_success(
 		array(

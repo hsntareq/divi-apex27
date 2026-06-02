@@ -686,3 +686,205 @@
 	}
 
 }
+
+/* Google Reviews Module Styles */
+
+.divi-apex27-google-reviews {
+	width: 100%;
+}
+
+.divi-apex27-google-reviews-title {
+	margin: 0 0 24px;
+	font-size: 28px;
+	font-weight: 600;
+	line-height: 1.2;
+	color: #333;
+}
+
+.divi-apex27-reviews-grid {
+	display: grid;
+	gap: 24px;
+	margin-top: 0;
+}
+
+.divi-apex27-reviews-columns-1 {
+	grid-template-columns: 1fr;
+}
+
+.divi-apex27-reviews-columns-2 {
+	grid-template-columns: repeat(2, 1fr);
+}
+
+.divi-apex27-reviews-columns-3 {
+	grid-template-columns: repeat(3, 1fr);
+}
+
+.divi-apex27-reviews-columns-4 {
+	grid-template-columns: repeat(4, 1fr);
+}
+
+.divi-apex27-reviews-columns-5 {
+	grid-template-columns: repeat(5, 1fr);
+}
+
+.divi-apex27-reviews-columns-6 {
+	grid-template-columns: repeat(6, 1fr);
+}
+
+.divi-apex27-reviews-align-left {
+	text-align: left;
+}
+
+.divi-apex27-reviews-align-center {
+	text-align: center;
+}
+
+.divi-apex27-reviews-align-right {
+	text-align: right;
+}
+
+.divi-apex27-review-card {
+	padding: 20px;
+	border: 1px solid #d6dde5;
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+	transition: all 0.3s ease;
+}
+
+.divi-apex27-review-card:hover {
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+	border-color: #bdc7d3;
+	transform: translateY(-2px);
+}
+
+.divi-apex27-review-author {
+	font-size: 16px;
+	font-weight: 600;
+	color: #222;
+	margin-bottom: 8px;
+}
+
+.divi-apex27-review-rating {
+	font-size: 14px;
+	color: #f59e0b;
+	margin-bottom: 8px;
+	letter-spacing: 2px;
+}
+
+.divi-apex27-review-date {
+	font-size: 12px;
+	color: #666;
+	margin-bottom: 12px;
+}
+
+.divi-apex27-review-text {
+	font-size: 14px;
+	line-height: 1.6;
+	color: #444;
+}
+
+.divi-apex27-review-text p {
+	margin: 0;
+}
+
+.divi-apex27-notice {
+	padding: 16px 20px;
+	border-left: 4px solid #dc2626;
+	background: #fef2f2;
+	border-radius: 4px;
+	color: #7f1d1d;
+	font-size: 14px;
+}
+
+.divi-apex27-notice-error {
+	border-left-color: #dc2626;
+	background: #fef2f2;
+	color: #7f1d1d;
+}
+
+.divi-apex27-notice p {
+	margin: 0;
+}
+
+/* Responsive Styles for Google Reviews */
+
+@media (max-width: 1024px) {
+	.divi-apex27-reviews-columns-6 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.divi-apex27-reviews-columns-5 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.divi-apex27-reviews-columns-4 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.divi-apex27-google-reviews-title {
+		font-size: 24px;
+	}
+
+	.divi-apex27-reviews-grid {
+		gap: 16px;
+	}
+
+	.divi-apex27-reviews-columns-6,
+	.divi-apex27-reviews-columns-5,
+	.divi-apex27-reviews-columns-4,
+	.divi-apex27-reviews-columns-3 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.divi-apex27-review-card {
+		padding: 16px;
+	}
+
+	.divi-apex27-review-author {
+		font-size: 15px;
+	}
+
+	.divi-apex27-review-text {
+		font-size: 13px;
+	}
+}
+
+@media (max-width: 480px) {
+	.divi-apex27-google-reviews-title {
+		font-size: 20px;
+		margin-bottom: 16px;
+	}
+
+	.divi-apex27-reviews-grid {
+		gap: 12px;
+	}
+
+	.divi-apex27-reviews-columns-1,
+	.divi-apex27-reviews-columns-2,
+	.divi-apex27-reviews-columns-3,
+	.divi-apex27-reviews-columns-4,
+	.divi-apex27-reviews-columns-5,
+	.divi-apex27-reviews-columns-6 {
+		grid-template-columns: 1fr;
+	}
+
+	.divi-apex27-review-card {
+		padding: 14px;
+	}
+
+	.divi-apex27-review-author {
+		font-size: 14px;
+	}
+
+	.divi-apex27-review-text {
+		font-size: 12px;
+	}
+
+	.divi-apex27-reviews-align-center,
+	.divi-apex27-reviews-align-right {
+		text-align: left;
+	}
+}

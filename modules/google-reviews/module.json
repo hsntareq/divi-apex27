@@ -1,0 +1,404 @@
+{
+    "name": "divi-apex27/google-reviews",
+    "version": "1.0.0",
+    "apiVersion": 2,
+    "title": "Google Reviews",
+    "titles": "Google Reviews",
+    "moduleIcon": "divi/module-star",
+    "moduleClassName": "divi-apex27-google-reviews",
+    "moduleOrderClassName": "divi_apex27_google_reviews",
+    "category": "module",
+    "visualBuilderScript": "divi-apex27-builder",
+    "attributes": {
+        "module": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "settings": {
+                "meta": {
+                    "meta": {}
+                },
+                "advanced": {
+                    "html": {},
+                    "link": {},
+                    "text": {},
+                    "loop": {}
+                },
+                "decoration": {
+                    "animation": {},
+                    "attributes": {},
+                    "background": {},
+                    "border": {},
+                    "boxShadow": {},
+                    "conditions": {},
+                    "disabledOn": {},
+                    "filters": {},
+                    "interactions": {},
+                    "overflow": {},
+                    "order": {},
+                    "position": {},
+                    "scroll": {},
+                    "sizing": {},
+                    "spacing": {},
+                    "sticky": {},
+                    "transform": {},
+                    "transition": {},
+                    "zIndex": {}
+                }
+            }
+        },
+        "apex27": {
+            "type": "object",
+            "selector": "{{selector}}",
+            "default": {
+                "content": {
+                    "title": {
+                        "desktop": {
+                            "value": "Google Reviews"
+                        }
+                    },
+                    "business_input_mode": {
+                        "desktop": {
+                            "value": "url"
+                        }
+                    },
+                    "business_url": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "business_name": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "api_key": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
+                    "row_count": {
+                        "desktop": {
+                            "value": "2"
+                        }
+                    },
+                    "column_count": {
+                        "desktop": {
+                            "value": "3"
+                        }
+                    },
+                    "max_reviews": {
+                        "desktop": {
+                            "value": "6"
+                        }
+                    },
+                    "review_sort": {
+                        "desktop": {
+                            "value": "newest"
+                        }
+                    },
+                    "show_rating": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_date": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "show_author": {
+                        "desktop": {
+                            "value": "on"
+                        }
+                    },
+                    "review_text_length": {
+                        "desktop": {
+                            "value": "150"
+                        }
+                    },
+                    "text_alignment": {
+                        "desktop": {
+                            "value": "left"
+                        }
+                    },
+                    "empty_text": {
+                        "desktop": {
+                            "value": "No reviews found. Please check your business URL or API key."
+                        }
+                    }
+                }
+            },
+            "settings": {
+                "content": {
+                    "title": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsContent",
+                            "attrName": "apex27.content.title",
+                            "priority": 5,
+                            "render": true,
+                            "label": "Title",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "business_input_mode": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "businessConfig",
+                            "attrName": "apex27.content.business_input_mode",
+                            "priority": 10,
+                            "render": true,
+                            "label": "Input Method",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "url": { "label": "Google Business URL" },
+                                        "name": { "label": "Business Name" },
+                                        "api_key": { "label": "Use API Key" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "business_url": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "businessConfig",
+                            "attrName": "apex27.content.business_url",
+                            "priority": 15,
+                            "render": true,
+                            "label": "Google Business URL",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "business_name": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "businessConfig",
+                            "attrName": "apex27.content.business_name",
+                            "priority": 16,
+                            "render": true,
+                            "label": "Business Name",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "api_key": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "businessConfig",
+                            "attrName": "apex27.content.api_key",
+                            "priority": 17,
+                            "render": true,
+                            "label": "Google Places API Key",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "row_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsLayout",
+                            "attrName": "apex27.content.row_count",
+                            "priority": 20,
+                            "render": true,
+                            "label": "Rows",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": { "label": "1" },
+                                        "2": { "label": "2" },
+                                        "3": { "label": "3" },
+                                        "4": { "label": "4" },
+                                        "5": { "label": "5" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "column_count": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsLayout",
+                            "attrName": "apex27.content.column_count",
+                            "priority": 21,
+                            "render": true,
+                            "label": "Columns",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "1": { "label": "1" },
+                                        "2": { "label": "2" },
+                                        "3": { "label": "3" },
+                                        "4": { "label": "4" },
+                                        "5": { "label": "5" },
+                                        "6": { "label": "6" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "max_reviews": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsLayout",
+                            "attrName": "apex27.content.max_reviews",
+                            "priority": 22,
+                            "render": true,
+                            "label": "Maximum Reviews",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "3": { "label": "3" },
+                                        "6": { "label": "6" },
+                                        "9": { "label": "9" },
+                                        "12": { "label": "12" },
+                                        "15": { "label": "15" },
+                                        "20": { "label": "20" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "review_sort": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.review_sort",
+                            "priority": 25,
+                            "render": true,
+                            "label": "Sort Reviews By",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "newest": { "label": "Newest" },
+                                        "oldest": { "label": "Oldest" },
+                                        "highest_rating": { "label": "Highest Rating" },
+                                        "lowest_rating": { "label": "Lowest Rating" },
+                                        "most_relevant": { "label": "Most Relevant" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "show_rating": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.show_rating",
+                            "priority": 26,
+                            "render": true,
+                            "label": "Show Rating",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_date": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.show_date",
+                            "priority": 27,
+                            "render": true,
+                            "label": "Show Review Date",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "show_author": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.show_author",
+                            "priority": 28,
+                            "render": true,
+                            "label": "Show Author Name",
+                            "component": {
+                                "name": "divi/toggle",
+                                "type": "field"
+                            }
+                        }
+                    },
+                    "review_text_length": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.review_text_length",
+                            "priority": 29,
+                            "render": true,
+                            "label": "Review Text Length (characters)",
+                            "component": {
+                                "name": "divi/number-input",
+                                "type": "field",
+                                "props": {
+                                    "min": 50,
+                                    "max": 500,
+                                    "step": 10
+                                }
+                            }
+                        }
+                    },
+                    "text_alignment": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsDisplay",
+                            "attrName": "apex27.content.text_alignment",
+                            "priority": 30,
+                            "render": true,
+                            "label": "Text Alignment",
+                            "component": {
+                                "name": "divi/select",
+                                "type": "field",
+                                "props": {
+                                    "options": {
+                                        "left": { "label": "Left" },
+                                        "center": { "label": "Center" },
+                                        "right": { "label": "Right" }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "empty_text": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "reviewsContent",
+                            "attrName": "apex27.content.empty_text",
+                            "priority": 35,
+                            "render": true,
+                            "label": "Empty State Message",
+                            "component": {
+                                "name": "divi/textarea",
+                                "type": "field"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
