@@ -21,6 +21,7 @@ require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-search-form-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-google-reviews-renderer.php';
 require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-property-details.php';
+require_once DIVI_APEX27_PATH . 'includes/class-divi-apex27-embedder-integration.php';
 
 register_activation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'Divi_Apex27_Property_Details', 'on_deactivation' ) );

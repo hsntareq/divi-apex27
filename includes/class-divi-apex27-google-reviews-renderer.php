@@ -29,6 +29,7 @@ class Divi_Apex27_Google_Reviews_Renderer {
 			'business_url'         => '',
 			'business_name'        => '',
 			'api_key'              => '',
+			'embedder_business_id' => '',
 			'row_count'            => '2',
 			'column_count'         => '3',
 			'max_reviews'          => '6',
@@ -142,7 +143,9 @@ class Divi_Apex27_Google_Reviews_Renderer {
 	 * @return array|WP_Error
 	 */
 	public static function fetch_reviews( array $props ) {
-		$cache_key = self::GOOGLE_REVIEWS_TRANSIENT_PREFIX . md5( $props['business_url'] . $props['business_name'] . $props['api_key'] );
+		// Build cache key with all possible identifiers
+		$cache_id = $props['business_url'] . $props['business_name'] . $props['api_key'] . $props['embedder_business_id'];
+		$cache_key = self::GOOGLE_REVIEWS_TRANSIENT_PREFIX . md5( $cache_id );
 		$cached    = get_transient( $cache_key );
 
 		if ( ! empty( $cached ) ) {
@@ -152,11 +155,17 @@ class Divi_Apex27_Google_Reviews_Renderer {
 		$reviews = array();
 
 		// Priority order:
-		// 1. Business URL (if provided)
-		// 2. API Key (if provided)
-		// 3. Business Name (if provided)
+		// 1. Embedder (if selected)
+		// 2. Business URL (if provided)
+		// 3. API Key (if provided)
+		// 4. Business Name (if provided)
 
-		if ( ! empty( $props['business_url'] ) ) {
+		if ( 'embedder' === $props['business_input_mode'] && ! empty( $props['embedder_business_id'] ) ) {
+			// Use Embedder plugin integration
+			if ( class_exists( 'Divi_Apex27_Embedder_Integration' ) ) {
+				$reviews = Divi_Apex27_Embedder_Integration::fetch_reviews_from_embedder( $props['embedder_business_id'] );
+			}
+		} elseif ( ! empty( $props['business_url'] ) ) {
 			$reviews = self::fetch_via_business_url( $props['business_url'] );
 		} elseif ( 'api_key' === $props['business_input_mode'] && ! empty( $props['api_key'] ) ) {
 			$reviews = self::fetch_via_places_api( $props );

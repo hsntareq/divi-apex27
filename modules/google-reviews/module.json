@@ -76,6 +76,11 @@
                             "value": ""
                         }
                     },
+                    "embedder_business_id": {
+                        "desktop": {
+                            "value": ""
+                        }
+                    },
                     "row_count": {
                         "desktop": {
                             "value": "2"
@@ -159,7 +164,8 @@
                                     "options": {
                                         "url": { "label": "Google Business URL" },
                                         "name": { "label": "Business Name" },
-                                        "api_key": { "label": "Use API Key" }
+                                        "api_key": { "label": "Use API Key" },
+                                        "embedder": { "label": "Embedder for Google Reviews" }
                                     }
                                 }
                             }
@@ -212,6 +218,24 @@
                                 "type": "field",
                                 "props": {
                                     "placeholder": "Your Google Places API key"
+                                }
+                            }
+                        }
+                    },
+                    "embedder_business_id": {
+                        "groupType": "group-item",
+                        "item": {
+                            "groupSlug": "businessConfig",
+                            "attrName": "apex27.content.embedder_business_id",
+                            "priority": 18,
+                            "render": {"dependsOn": "apex27.content.business_input_mode", "value": "embedder"},
+                            "label": "Search Business",
+                            "component": {
+                                "name": "divi/text",
+                                "type": "field",
+                                "props": {
+                                    "placeholder": "Type business name and select from list...",
+                                    "isSearchable": true
                                 }
                             }
                         }
