@@ -401,15 +401,16 @@
 					loadingText: 'Loading Apex27 property valuations...',
 					updatingText: 'Updating property valuations...'
 				})
-			}
-		];
-
-		let anyRegistered = false;
-		definitions.forEach((definition) => {
-			const registered = registerModule(definition);
-			anyRegistered = anyRegistered || registered;
-		});
-
+		},
+		{
+			flag: 'diviApex27GoogleReviewsRegistered',
+			metadata: window.diviApex27GoogleReviewsMetadata || null,
+			loadingText: 'Loading Google Reviews...',
+			createRenderer: (React) => createPropertyFilterPreviewRenderer(React, {
+				action: 'divi_apex27_builder_google_reviews_preview',
+				loadingText: 'Loading Google Reviews...',
+				updatingText: 'Updating Google Reviews...'
+			})
 		return anyRegistered;
 	}
 
